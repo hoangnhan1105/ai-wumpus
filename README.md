@@ -1,2 +1,2 @@
 # ai-wumpus
-Introduction to Artificial Intelligence - Project 2 - Wumpus World
+HCMUS - Introduction to Artificial Intelligence - Project 2 - Wumpus World
