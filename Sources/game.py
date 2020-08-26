@@ -120,10 +120,14 @@ class game:
 
     def to_scr_pos(self, pos, add_x=0, add_y=0, shoot=False):
         if shoot:
-            if add_x != 0:
+            if add_x > 0:
                 return (27 + pos[0] * (WIDTH_CARD + 5) + add_x + WIDTH_CARD/2 , 10 + pos[1] * (WIDTH_CARD + 5) + add_y + WIDTH_CARD/2 - 16)
-            if add_y != 0:
+            if add_y > 0:
                 return (27 + pos[0] * (WIDTH_CARD + 5) + add_x + WIDTH_CARD/2 - 16 , 10 + pos[1] * (WIDTH_CARD + 5) + add_y + WIDTH_CARD/2)
+            if add_x < 0:
+                return (27 + pos[0] * (WIDTH_CARD + 5) + add_x + WIDTH_CARD/2 - 32 , 10 + pos[1] * (WIDTH_CARD + 5) + add_y + WIDTH_CARD/2 - 16)
+            if add_y < 0:
+                return (27 + pos[0] * (WIDTH_CARD + 5) + add_x + WIDTH_CARD/2  - 16 , 10 + pos[1] * (WIDTH_CARD + 5) + add_y + WIDTH_CARD/2 - 32)
 
         return (27 + pos[0] * (WIDTH_CARD + 5) + add_x, 10 + pos[1] * (WIDTH_CARD + 5) + add_y)
 
@@ -232,6 +236,7 @@ class game:
 
     def sword_shoot_animation(self, knight, des_pos, visited, cells):
         running = True
+        score = 0
         des_cell = cells[des_pos[1]][des_pos[0]]
         self.score += PEN_SHOOTING_ARROW
 
@@ -287,7 +292,8 @@ class game:
             pygame.display.update()
 
             pygame.time.delay(10)
-            if moved == -DISTANCE_SHOOT or moved == DISTANCE_SHOOT: break
+            if moved == -DISTANCE_SHOOT or moved == DISTANCE_SHOOT:
+                break
 
         # Wumpus die
         if des_cell.is_wumpus_exist():
@@ -316,6 +322,7 @@ class game:
 
         # For simplistic
         knight = cells[0][1]
+        knight.set_spawn()
         knight.knight_come()
         visited[knight.pos[1]][knight.pos[0]] = True
 
@@ -328,7 +335,7 @@ class game:
         knight, running = self.knight_move_animation(knight, pos, visited, cells)
 
 
-        #pos = (2, 2)
+        pos = (0, 2)
         running = self.sword_shoot_animation(knight, pos, visited, cells)
 
         running = True

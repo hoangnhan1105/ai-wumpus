@@ -27,6 +27,7 @@ class CARD(enum.Enum):
     WUMPUS_BREEZE = 22
     WUMPUS_STENCH = 23
     WUMPUS_STENCH_BREEZE = 24
+    START = 25
 
 
 # Card
@@ -55,7 +56,8 @@ IMG_CARD = [r"../Assets/Cards/breeze.png",
             r"../Assets/Cards/wumpus.png",
             r"../Assets/Cards/wumpus_breeze.png",
             r"../Assets/Cards/wumpus_stench.png",
-            r"../Assets/Cards/wumpus_stench_breeze.png"]
+            r"../Assets/Cards/wumpus_stench_breeze.png",
+            r"../Assets/Cards/start.png"]
 
 # Window
 WIDTH, HEIGHT = 900, 900

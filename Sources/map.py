@@ -58,6 +58,7 @@ def random_knight_spawn(cells, visited):
                 empty_pos += [cells[i][j]]
 
     rand = random.choice(empty_pos)
+    rand.set_spawn()
     rand.knight_come()
     visited[rand.pos[1]][rand.pos[0]] = True
 

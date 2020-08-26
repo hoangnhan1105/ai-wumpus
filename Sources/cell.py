@@ -70,3 +70,9 @@ class cell:
 
     def is_hole_exist(self):
         return self.state in [CARD.HOLE, CARD.HOLE_BREEZE, CARD.HOLE_STENCH, CARD.HOLE_STENCH_BREEZE]
+
+    def set_spawn(self):
+        self.state = self.prev_state = CARD.START
+
+    def is_able_to_escape(self):
+        return self.state == CARD.START
