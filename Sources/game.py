@@ -117,6 +117,8 @@ class game:
         # Back button (playing)
         self.button_backletsgo = button( self.screen, BUTTON_COLOR, TEXT_COLOR, BUTTON_BORDER_COLOR, RECT_BACKLETSGO, TEXT_SIZE_BACKLETSGO,  "BACK")
 
+        # Start
+
 
     def to_scr_pos(self, pos, add_x=0, add_y=0, shoot=False):
         if shoot:
@@ -318,10 +320,10 @@ class game:
         cells, self.gold = raw_to_cells(raw_map)
 
         # Random knight spawn
-        #knight = random_knight_spawn(cells, visited)
+        #start = knight = random_knight_spawn(cells, visited)
 
         # For simplistic
-        knight = cells[0][1]
+        start = knight = cells[0][1]
         knight.set_spawn()
         knight.knight_come()
         visited[knight.pos[1]][knight.pos[0]] = True
