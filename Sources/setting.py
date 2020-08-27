@@ -67,9 +67,13 @@ FPS = 60
 
 # Image
 IMG_MENU = r"../Assets/game_menu.png"
-IMG_ICON = r"../Assets/icon.png"
+IMG_ICON_WUMPUS = r"../Assets/icon_wumpus.png"
+IMG_ICON_GOLD = r"../Assets/icon_gold.png"
+IMG_ICON_SCORE = r"../Assets/icon_score.png"
 IMG_WUMPUS = r"../Assets/wumpus.png"
 IMG_BACKGROUND = r"../Assets/bg.jpg"
+IMG_VICTORY = r"../Assets/victory.png"
+IMG_LOSE = r"../Assets/lose.png"
 
 # Map
 MAP = [r"../Maps/map1.txt"]
@@ -122,3 +126,5 @@ SCORE_KILL_WUMPUS = 1000
 
 LETSGO = "letsgo"
 MENU = "menu"
+VICTORY = "victory"
+LOSE = "lose"

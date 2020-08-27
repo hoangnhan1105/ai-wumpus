@@ -89,11 +89,15 @@ class game:
 
         # Catiop and Icon
         self.caption = pygame.display.set_caption(CAPTION)
-        load_icon = pygame.image.load(IMG_ICON)
-        self.icon = pygame.display.set_icon(load_icon)
+        self.icon_wumpus = pygame.image.load(IMG_ICON_WUMPUS)
+        self.icon_gold = pygame.image.load(IMG_ICON_GOLD)
+        self.icon_score = pygame.image.load(IMG_ICON_SCORE)
+        self.icon = pygame.display.set_icon(self.icon_wumpus)
 
         # Background
         self.background = pygame.image.load(IMG_BACKGROUND).convert()
+        self.victory = pygame.image.load(IMG_VICTORY).convert()
+        self.lose = pygame.image.load(IMG_LOSE).convert()
 
         # Menu
         self.menu = pygame.image.load(IMG_MENU).convert()
@@ -111,8 +115,9 @@ class game:
         # Game score
         self.score = 0
 
-        # Gold remaining
+        # Gold, Wumpus remaining
         self.gold = 0
+        self.wumpus = 0
 
         # Back button (playing)
         self.button_backletsgo = button( self.screen, BUTTON_COLOR, TEXT_COLOR, BUTTON_BORDER_COLOR, RECT_BACKLETSGO, TEXT_SIZE_BACKLETSGO,  "BACK")
@@ -154,16 +159,36 @@ class game:
 
 
     def draw_frame_game(self, visited, cells):
-        self.screen.blit(self.background, [0, 0])
-        self.draw_map(cells)
-        self.draw_bush(visited)
-        self.button_backletsgo.draw(True)
+        color = (0,0,0)
+        if self.state == VICTORY or self.state == LOSE:
+            color = (255, 255, 255)
+        else:
+            self.screen.blit(self.background, [0, 0])
+            self.draw_map(cells)
+            self.draw_bush(visited)
+
+        if self.state == VICTORY:
+            self.screen.blit(self.victory, [0,0])
+
+        if self.state == LOSE:
+            self.screen.blit(self.lose, [0,0])
 
         font = pygame.font.SysFont("comicsansms", TEXT_SIZE_SCORE)
-        text = font.render("SCORE: " + str(self.score), True, (0,0,0))
-        self.screen.blit(text, (10, 860))
-        text = font.render("GOLD REMAINING: " + str(self.gold), True, (0,0,0))
-        self.screen.blit(text, (305, 860))
+
+        self.screen.blit(self.icon_wumpus, (10, 860))
+        text = font.render(str(self.wumpus), True, color)
+        self.screen.blit(text, (60, 860))
+
+        self.screen.blit(self.icon_gold, (110, 860))
+        text = font.render(str(self.gold), True, color)
+        self.screen.blit(text, (160, 860))
+
+        self.screen.blit(self.icon_score, (210, 860))
+        text = font.render(str(self.score), True, color)
+        self.screen.blit(text, (260, 860))
+
+        self.button_backletsgo.draw(True)
+
 
 
     def knight_move_animation(self, knight, des_pos, visited, cells):
@@ -306,37 +331,41 @@ class game:
         self.score += score
 
 
+    def knight_escape(self):
+        self.score += SCORE_CLIMBING_OUT
+        self.state = VICTORY
 
-    def letsgo(self):
+    def scr_letsgo(self):
+
         # Init a visited list show that the KNIGHT pass the cell yet?
         visited = [[False for _ in range(10)] for _ in range(10)]
 
         # Create cell, number of gold on the map
         raw_map = input_raw(MAP[0])
-        cells, self.gold = raw_to_cells(raw_map)
+        cells, self.gold, self.wumpus = raw_to_cells(raw_map)
+        self.score = 0
 
         # Random knight spawn
         #start = knight = random_knight_spawn(cells, visited)
 
         # For simplistic
-        start = knight = cells[0][1]
+        start = knight = cells[0][2]
         knight.set_spawn()
         knight.knight_come()
         visited[knight.pos[1]][knight.pos[0]] = True
 
         # Move
         # pos (x, y)
-        pos = (1, 1)
+        pos = (2, 1)
         knight = self.knight_move_animation(knight, pos, visited, cells)
 
-        pos = (1, 2)
+        pos = (2, 2)
         knight = self.knight_move_animation(knight, pos, visited, cells)
-
 
         #pos = (0, 2)
         #self.sword_shoot_animation(knight, pos, visited, cells)
 
-        while self.state == LETSGO:
+        while self.state == LETSGO or self.state == VICTORY or self.state == LOSE:
             # Draw frame while game is running and update all to the screen
             self.draw_frame_game(visited, cells)
             pygame.display.update()
@@ -363,8 +392,12 @@ class game:
                         self.button_backletsgo.text_color = TEXT_COLOR
                         self.button_backletsgo.button_color = BUTTON_COLOR
 
-            # KNIGHT move, ...
+            # Knight move, ...
+            # if self.knight_escape() is called then self.state is set to VICTORY hence game is end
 
+            # End game condition
+            if knight is None and self.state != MENU: self.state = LOSE
+            if self.wumpus == 0 and self.gold == 0 and self.state != MENU: self.state = VICTORY
 
 
     def scr_menu_draw(self):
@@ -393,7 +426,7 @@ class game:
 
                     if self.button_letsgo.isOver(mouse_pos):
                         self.state = LETSGO
-                        self.letsgo()
+                        self.scr_letsgo()
 
 
                     if self.button_choosemap.isOver(mouse_pos):

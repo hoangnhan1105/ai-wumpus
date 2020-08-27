@@ -16,6 +16,7 @@ def input_raw(map_input_path):
 def raw_to_cells(raw_map):
     cells = []
     gold = 0
+    wumpus = 0
 
 
     for i in range(10):
@@ -41,13 +42,14 @@ def raw_to_cells(raw_map):
             if raw_map[i][j] == "wbs": state = CARD.WUMPUS_STENCH_BREEZE
 
             if raw_map[i][j] in ["g", "gb", "gbs", "gs"]: gold += 1
+            if raw_map[i][j] in ["w", "wb", "wbs", "ws"]: wumpus += 1
 
             # (j, i) == (x, y)
             row.append(cell((j, i), state))
 
         cells.append(row)
 
-    return cells, gold
+    return cells, gold, wumpus
 
 def random_knight_spawn(cells, visited):
     empty_pos = []
