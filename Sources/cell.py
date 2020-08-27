@@ -13,7 +13,7 @@ class cell:
             self.gold_colected()
             res += SCORE_PICKING_GOLD
 
-        if self.state == CARD.GOLD or self.state == CARD.EMPTY or self.state == CARD.KILL:
+        if self.state == CARD.GOLD or self.state == CARD.EMPTY or self.state == CARD.KILL or self.state == CARD.START:
             self.state = CARD.KNIGHT
 
         if self.state == CARD.GOLD_BREEZE or self.state == CARD.KILL_BREEZE or self.state == CARD.BREEZE:

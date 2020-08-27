@@ -117,7 +117,9 @@ class game:
         # Back button (playing)
         self.button_backletsgo = button( self.screen, BUTTON_COLOR, TEXT_COLOR, BUTTON_BORDER_COLOR, RECT_BACKLETSGO, TEXT_SIZE_BACKLETSGO,  "BACK")
 
-        # Start
+        # Game state:
+        self.state = MENU
+
 
 
     def to_scr_pos(self, pos, add_x=0, add_y=0, shoot=False):
@@ -165,7 +167,6 @@ class game:
 
 
     def knight_move_animation(self, knight, des_pos, visited, cells):
-        running = True
         des_cell = cells[des_pos[1]][des_pos[0]]
 
         # Open the cell that knight move to
@@ -176,7 +177,7 @@ class game:
         # Knight move animation
         knight.knight_leave()
         moved = 0
-        while running:
+        while self.state == LETSGO:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -185,7 +186,7 @@ class game:
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.button_backletsgo.isOver(mouse_pos):
-                        running = False
+                        self.state = MENU
 
                 if event.type == pygame.MOUSEMOTION:
                     if self.button_backletsgo.isOver(mouse_pos):
@@ -232,12 +233,10 @@ class game:
         if knight.is_wumpus_exist() or knight.is_hole_exist():
             knight = None
 
-        pygame.time.delay(500)
-        return knight, running
+        return knight
 
 
     def sword_shoot_animation(self, knight, des_pos, visited, cells):
-        running = True
         score = 0
         des_cell = cells[des_pos[1]][des_pos[0]]
         self.score += PEN_SHOOTING_ARROW
@@ -250,7 +249,7 @@ class game:
 
         # Shoot animation
         moved = 0
-        while running:
+        while self.state == LETSGO:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -259,7 +258,7 @@ class game:
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.button_backletsgo.isOver(mouse_pos):
-                        running = False
+                        self.state == MENU
 
                 if event.type == pygame.MOUSEMOTION:
                     if self.button_backletsgo.isOver(mouse_pos):
@@ -306,9 +305,6 @@ class game:
         # Update game score
         self.score += score
 
-        pygame.time.delay(500)
-
-        return running
 
 
     def letsgo(self):
@@ -331,17 +327,16 @@ class game:
         # Move
         # pos (x, y)
         pos = (1, 1)
-        knight, running = self.knight_move_animation(knight, pos, visited, cells)
+        knight = self.knight_move_animation(knight, pos, visited, cells)
 
         pos = (1, 2)
-        knight, running = self.knight_move_animation(knight, pos, visited, cells)
+        knight = self.knight_move_animation(knight, pos, visited, cells)
 
 
-        pos = (0, 2)
-        running = self.sword_shoot_animation(knight, pos, visited, cells)
+        #pos = (0, 2)
+        #self.sword_shoot_animation(knight, pos, visited, cells)
 
-        running = True
-        while running:
+        while self.state == LETSGO:
             # Draw frame while game is running and update all to the screen
             self.draw_frame_game(visited, cells)
             pygame.display.update()
@@ -356,7 +351,7 @@ class game:
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.button_backletsgo.isOver(mouse_pos):
-                        running = False
+                        self.state = MENU
 
                 if event.type == pygame.MOUSEMOTION:
                     if self.button_backletsgo.isOver(mouse_pos):
@@ -381,9 +376,8 @@ class game:
 
 
     def scr_menu(self):
-        running = True
 
-        while running:
+        while self.state == MENU:
 
             self.scr_menu_draw()
             pygame.display.update()
@@ -398,17 +392,18 @@ class game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
 
                     if self.button_letsgo.isOver(mouse_pos):
+                        self.state = LETSGO
                         self.letsgo()
 
 
                     if self.button_choosemap.isOver(mouse_pos):
-                        running = False
+                        self.state = ""
 
                     if self.button_tutorial.isOver(mouse_pos):
-                        running = False
+                        self.state = ""
 
                     if self.button_exist.isOver(mouse_pos):
-                        running = False
+                        self.state = ""
 
 
                 if event.type == pygame.MOUSEMOTION:
