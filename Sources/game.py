@@ -138,15 +138,15 @@ class game:
     def to_scr_pos(self, pos, add_x=0, add_y=0, shoot=False):
         if shoot:
             if add_x > 0:
-                return (27 + pos[0] * (WIDTH_CARD + 5) + add_x + WIDTH_CARD/2 , 10 + pos[1] * (WIDTH_CARD + 5) + add_y + WIDTH_CARD/2 - 16)
+                return ((22 + pos[0] * (WIDTH_CARD + 4) + add_x + WIDTH_CARD/2), (8 + pos[1] * (WIDTH_CARD + 4) + add_y + WIDTH_CARD/2 - 13))
             if add_y > 0:
-                return (27 + pos[0] * (WIDTH_CARD + 5) + add_x + WIDTH_CARD/2 - 16 , 10 + pos[1] * (WIDTH_CARD + 5) + add_y + WIDTH_CARD/2)
+                return ((22 + pos[0] * (WIDTH_CARD + 4) + add_x + WIDTH_CARD/2 - 13), (8 + pos[1] * (WIDTH_CARD + 4) + add_y + WIDTH_CARD/2))
             if add_x < 0:
-                return (27 + pos[0] * (WIDTH_CARD + 5) + add_x + WIDTH_CARD/2 - 32 , 10 + pos[1] * (WIDTH_CARD + 5) + add_y + WIDTH_CARD/2 - 16)
+                return ((22 + pos[0] * (WIDTH_CARD + 4) + add_x + WIDTH_CARD/2 - 26), (8 + pos[1] * (WIDTH_CARD + 4) + add_y + WIDTH_CARD/2 - 13))
             if add_y < 0:
-                return (27 + pos[0] * (WIDTH_CARD + 5) + add_x + WIDTH_CARD/2  - 16 , 10 + pos[1] * (WIDTH_CARD + 5) + add_y + WIDTH_CARD/2 - 32)
+                return ((22 + pos[0] * (WIDTH_CARD + 4) + add_x + WIDTH_CARD/2  - 13), (8 + pos[1] * (WIDTH_CARD + 4) + add_y + WIDTH_CARD/2 - 26))
 
-        return (27 + pos[0] * (WIDTH_CARD + 5) + add_x, 10 + pos[1] * (WIDTH_CARD + 5) + add_y)
+        return (22 + pos[0] * (WIDTH_CARD + 4) + add_x, 8 + pos[1] * (WIDTH_CARD + 4) + add_y)
 
 
     def draw_cell(self, cell):
@@ -183,17 +183,17 @@ class game:
 
         font = pygame.font.SysFont("comicsansms", TEXT_SIZE_SCORE)
 
-        self.screen.blit(self.icon_wumpus, (10, 860))
+        self.screen.blit(self.icon_wumpus, (int(10 * re), int(860 * re)))
         text = font.render(str(self.wumpus), True, color)
-        self.screen.blit(text, (60, 860))
+        self.screen.blit(text, (int(60 * re), int(860 * re)))
 
-        self.screen.blit(self.icon_gold, (110, 860))
+        self.screen.blit(self.icon_gold, (int(110 * re), int(860 * re)))
         text = font.render(str(self.gold), True, color)
-        self.screen.blit(text, (160, 860))
+        self.screen.blit(text, (int(160 * re), int(860 * re)))
 
-        self.screen.blit(self.icon_score, (210, 860))
+        self.screen.blit(self.icon_score, (int(210 * re), int(860 * re)))
         text = font.render(str(self.score), True, color)
-        self.screen.blit(text, (260, 860))
+        self.screen.blit(text, (int(260 * re), int(860 * re)))
 
         self.button_backletsgo.draw(True)
 
@@ -275,6 +275,7 @@ class game:
 
         # Open the cell that containt wumpus
         if des_cell.is_wumpus_exist():
+            self.wumpus -= 1
             visited[des_pos[1]][des_pos[0]] = True
             self.draw_frame_game(visited, cells)
             pygame.display.update()
@@ -367,11 +368,11 @@ class game:
         pos = (2, 1)
         knight = self.knight_move_animation(knight, pos, visited, cells)
 
-        pos = (2, 2)
-        knight = self.knight_move_animation(knight, pos, visited, cells)
+        #pos = (2, 2)
+        #knight = self.knight_move_animation(knight, pos, visited, cells)
 
-        #pos = (0, 2)
-        #self.sword_shoot_animation(knight, pos, visited, cells)
+        pos = (2, 2)
+        self.sword_shoot_animation(knight, pos, visited, cells)
 
         while self.state == LETSGO or self.state == VICTORY or self.state == LOSE:
             # Draw frame while game is running and update all to the screen

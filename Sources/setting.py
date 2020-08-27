@@ -29,9 +29,10 @@ class CARD(enum.Enum):
     WUMPUS_STENCH_BREEZE = 24
     START = 25
 
+re = 0.8
 
 # Card
-WIDTH_CARD = 80
+WIDTH_CARD = int(80 * re)
 IMG_CARD = [r"../Assets/Cards/breeze.png",
             r"../Assets/Cards/bush.png",
             r"../Assets/Cards/empty.png",
@@ -60,9 +61,8 @@ IMG_CARD = [r"../Assets/Cards/breeze.png",
             r"../Assets/Cards/start.png"]
 
 # Window
-WIDTH, HEIGHT = 900, 900
+WIDTH, HEIGHT = int(900 * re), int(900 * re)
 CAPTION = r"Wumpus"
-FPS = 60
 
 
 # Image
@@ -87,40 +87,40 @@ IMG_SWORD = [r"../Assets/sword_up.png",
              r"../Assets/sword_right.png"]
 
 # Button
-TEXT_SIZE_MENU = 44
+TEXT_SIZE_MENU = int(44 * re)
 TEXT_COLOR = BUTTON_BORDER_COLOR = TEXT_MENU_COLOR = BUTTON_MENU_BORDER_COLOR = "#000000"
 TEXT_COLOR_OVER = BUTTON_BORDER_COLOR_OVER = TEXT_MENU_COLOR_OVER = BUTTON_MENU_BORDER_COLOR_OVER = "#eaedff"
 BUTTON_COLOR = BUTTON_MENU_COLOR = "#eaedff"
 BUTTON_COLOR_OVER = BUTTON_MENU_COLOR_OVER = "#b5b9ff"
 
-RECT_LETSGO = (75, 340, 300, 75)
-RECT_CHOOSEMAP = (75, 460, 300, 75)
-RECT_TUTORIAL = (75, 580, 300, 75)
-RECT_EXIST = (75, 700, 300, 75)
+RECT_LETSGO = (int(75 * re), int(340 * re), int(300 * re), int(75 * re))
+RECT_CHOOSEMAP = (int(75 * re), int(460 * re), int(300 * re), int(75 * re))
+RECT_TUTORIAL = (int(75 * re), int(580 * re), int(300 * re), int(75 * re))
+RECT_EXIST = (int(75 * re), int(700 * re), int(300 * re), int(75 * re))
 
-TEXT_SIZE_BACKLETSGO = 28
-RECT_BACKLETSGO = (810,865,80,25)
-TEXT_SIZE_SUB = 18
-RECT_PREV = (10 + 305, 870, 60, 15)
-RECT_SELECT = (80 + 305, 865, 150, 25)
-RECT_NEXT = (240 + 305, 870, 60, 15)
+TEXT_SIZE_BACKLETSGO = int(28 * re)
+RECT_BACKLETSGO = (int(810 * re), int(865 * re), int(80 * re), int(25 * re))
+TEXT_SIZE_SUB = int(18 * re)
+RECT_PREV = (int(315 * re), int(870 * re), int(60 * re), int(15 * re))
+RECT_SELECT = (int(385 * re), int(865 * re), int(150 * re), int(25 * re))
+RECT_NEXT = (int(545 * re), int(870 * re), int(60 * re), int(15 * re))
 
 
 
 # Score frame
-TEXT_SIZE_SCORE = 26
+TEXT_SIZE_SCORE = int(26 * re)
 TEXT_SCORE_COLOR = "#000000"
 BUTTON_SCORE_COLOR = "#eaedff"
 
-RECT_SCORE = (10, 860, 150, 35)
+RECT_SCORE = (int(10 * re), int(860 * re), int(150 * re), int(35 * re))
 
 # Knight move animation
-DISTANCE_CARD = 85
-KNIGHT_MOVE_PIXELS_PER_STEP = 5
+DISTANCE_CARD = int(85 * re)
+KNIGHT_MOVE_PIXELS_PER_STEP = int(5 * re)
 
 # Shoot animation
-DISTANCE_SHOOT = 52
-SHOOT_PIXELS_PER_STEP = 4
+DISTANCE_SHOOT = 42 #int(52 * re)
+SHOOT_PIXELS_PER_STEP = 2
 
 # Game score
 PEN_DIE = -10000
