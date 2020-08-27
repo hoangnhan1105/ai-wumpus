@@ -76,9 +76,17 @@ IMG_VICTORY = r"../Assets/victory.png"
 IMG_LOSE = r"../Assets/lose.png"
 
 # Map
-MAP = [r"../Maps/map1.txt"]
+MAP = [r"../Maps/map1.txt",
+       r"../Maps/map2.txt",
+       r"../Maps/map3.txt",
+       r"../Maps/map4.txt",
+       r"../Maps/map5.txt"]
 
-IMG_MAP = [r"../Assets/Maps/map1.png"]
+IMG_MAP = [r"../Assets/Maps/map1.png",
+           r"../Assets/Maps/map2.png",
+           r"../Assets/Maps/map3.png",
+           r"../Assets/Maps/map4.png",
+           r"../Assets/Maps/map5.png"]
 
 # Sword
 IMG_SWORD = [r"../Assets/sword_up.png",

@@ -269,12 +269,15 @@ class game:
 
 
     def sword_shoot_animation(self, knight, des_pos, visited, cells):
+        killed = False
+
         score = 0
         des_cell = cells[des_pos[1]][des_pos[0]]
         self.score += PEN_SHOOTING_ARROW
 
         # Open the cell that containt wumpus
         if des_cell.is_wumpus_exist():
+            killed = True
             self.wumpus -= 1
             visited[des_pos[1]][des_pos[0]] = True
             self.draw_frame_game(visited, cells)
@@ -338,6 +341,8 @@ class game:
         # Update game score
         self.score += score
 
+        return killed
+
 
     def knight_escape(self):
         self.score += SCORE_CLIMBING_OUT
@@ -372,7 +377,7 @@ class game:
         #knight = self.knight_move_animation(knight, pos, visited, cells)
 
         pos = (2, 2)
-        self.sword_shoot_animation(knight, pos, visited, cells)
+        killed = self.sword_shoot_animation(knight, pos, visited, cells)
 
         while self.state == LETSGO or self.state == VICTORY or self.state == LOSE:
             # Draw frame while game is running and update all to the screen
@@ -401,7 +406,9 @@ class game:
                         self.button_backletsgo.text_color = TEXT_COLOR
                         self.button_backletsgo.button_color = BUTTON_COLOR
 
-            # Knight move, ...
+
+            # knight.knight_move_animation() return destination cell that knight move to
+            # knight.knight_shoot_animation() return True or False whether knight killed wumpus or not
             # if self.knight_escape() is called then self.state is set to VICTORY hence game is end
 
             # End game condition
@@ -425,7 +432,7 @@ class game:
         self.screen.blit(self.background, [0, 0])
 
         # Test
-        #raw_map = input_raw(MAP[0])
+        #raw_map = input_raw(MAP[4])
         #cells, self.gold, self.wumpus = raw_to_cells(raw_map)
         #self.draw_map(cells)
         #pygame.display.update()
