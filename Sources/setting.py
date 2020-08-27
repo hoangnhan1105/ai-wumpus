@@ -78,6 +78,8 @@ IMG_LOSE = r"../Assets/lose.png"
 # Map
 MAP = [r"../Maps/map1.txt"]
 
+IMG_MAP = [r"../Assets/Maps/map1.png"]
+
 # Sword
 IMG_SWORD = [r"../Assets/sword_up.png",
              r"../Assets/sword_down.png",
@@ -98,6 +100,10 @@ RECT_EXIST = (75, 700, 300, 75)
 
 TEXT_SIZE_BACKLETSGO = 28
 RECT_BACKLETSGO = (810,865,80,25)
+TEXT_SIZE_SUB = 18
+RECT_PREV = (10 + 305, 870, 60, 15)
+RECT_SELECT = (80 + 305, 865, 150, 25)
+RECT_NEXT = (240 + 305, 870, 60, 15)
 
 
 
@@ -125,6 +131,7 @@ SCORE_CLIMBING_OUT = 10
 SCORE_KILL_WUMPUS = 1000
 
 LETSGO = "letsgo"
+CHOOSEMAP = "choosemap"
 MENU = "menu"
 VICTORY = "victory"
 LOSE = "lose"

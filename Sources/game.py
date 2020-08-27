@@ -106,6 +106,14 @@ class game:
         self.button_tutorial = button(self.screen, BUTTON_MENU_COLOR, TEXT_MENU_COLOR, BUTTON_MENU_BORDER_COLOR, RECT_TUTORIAL, TEXT_SIZE_MENU, "TUTORIAL")
         self.button_exist = button(self.screen, BUTTON_MENU_COLOR, TEXT_MENU_COLOR, BUTTON_MENU_BORDER_COLOR, RECT_EXIST, TEXT_SIZE_MENU, "EXIT")
 
+        # Back button (playing)
+        self.button_backletsgo = button(self.screen, BUTTON_COLOR, TEXT_COLOR, BUTTON_BORDER_COLOR, RECT_BACKLETSGO, TEXT_SIZE_BACKLETSGO, "BACK")
+
+        # Choose game
+        self.button_select = button(self.screen, BUTTON_COLOR, TEXT_COLOR, BUTTON_BORDER_COLOR, RECT_SELECT, TEXT_SIZE_BACKLETSGO, "SELECT")
+        self.button_next = button(self.screen, BUTTON_COLOR, TEXT_COLOR, BUTTON_BORDER_COLOR, RECT_NEXT, TEXT_SIZE_SUB, "NEXT")
+        self.button_prev = button(self.screen, BUTTON_COLOR, TEXT_COLOR, BUTTON_BORDER_COLOR, RECT_PREV, TEXT_SIZE_SUB, "PREV")
+
         # Cards
         self.cards = [pygame.image.load(IMG_CARD[i]) for i in range(len(IMG_CARD))]
 
@@ -119,12 +127,12 @@ class game:
         self.gold = 0
         self.wumpus = 0
 
-        # Back button (playing)
-        self.button_backletsgo = button( self.screen, BUTTON_COLOR, TEXT_COLOR, BUTTON_BORDER_COLOR, RECT_BACKLETSGO, TEXT_SIZE_BACKLETSGO,  "BACK")
-
         # Game state:
         self.state = MENU
 
+        # Map
+        self.map_choose = 0
+        self.map = [pygame.image.load(IMG_MAP[i]) for i in range(len(IMG_MAP))]
 
 
     def to_scr_pos(self, pos, add_x=0, add_y=0, shoot=False):
@@ -188,7 +196,6 @@ class game:
         self.screen.blit(text, (260, 860))
 
         self.button_backletsgo.draw(True)
-
 
 
     def knight_move_animation(self, knight, des_pos, visited, cells):
@@ -335,13 +342,14 @@ class game:
         self.score += SCORE_CLIMBING_OUT
         self.state = VICTORY
 
+
     def scr_letsgo(self):
 
         # Init a visited list show that the KNIGHT pass the cell yet?
         visited = [[False for _ in range(10)] for _ in range(10)]
 
         # Create cell, number of gold on the map
-        raw_map = input_raw(MAP[0])
+        raw_map = input_raw(MAP[self.map_choose])
         cells, self.gold, self.wumpus = raw_to_cells(raw_map)
         self.score = 0
 
@@ -400,6 +408,109 @@ class game:
             if self.wumpus == 0 and self.gold == 0 and self.state != MENU: self.state = VICTORY
 
 
+    def scr_draw_choosemap(self, temp_choose):
+        self.screen.blit(self.map[temp_choose], [0,0])
+        self.button_select.draw(True)
+        self.button_next.draw(True)
+        self.button_prev.draw(True)
+        self.button_backletsgo.draw(True)
+        pygame.display.update()
+
+
+    def scr_choosemap(self):
+        # Number of map
+        num_map = len(MAP)
+        temp_choose = self.map_choose
+        self.screen.blit(self.background, [0, 0])
+
+        # Test
+        #raw_map = input_raw(MAP[0])
+        #cells, self.gold, self.wumpus = raw_to_cells(raw_map)
+        #self.draw_map(cells)
+        #pygame.display.update()
+
+        while self.state == CHOOSEMAP:
+            self.scr_draw_choosemap(temp_choose)
+
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                mouse_pos = pygame.mouse.get_pos()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.button_backletsgo.isOver(mouse_pos):
+                        self.state = MENU
+                        self.button_backletsgo.outline_color = BUTTON_BORDER_COLOR
+                        self.button_backletsgo.text_color = TEXT_COLOR
+                        self.button_backletsgo.button_color = BUTTON_COLOR
+
+                    if self.button_select.isOver(mouse_pos):
+                        self.map_choose = temp_choose
+                        self.state = MENU
+                        self.button_select.outline_color = BUTTON_BORDER_COLOR
+                        self.button_select.text_color = TEXT_COLOR
+                        self.button_select.button_color = BUTTON_COLOR
+
+                    if self.button_prev.isOver(mouse_pos):
+                        if (temp_choose > 0): temp_choose -= 1
+                        else: temp_choose = num_map - 1
+                        self.button_next.outline_color = BUTTON_BORDER_COLOR
+                        self.button_next.text_color = TEXT_COLOR
+                        self.button_next.button_color = BUTTON_COLOR
+
+                    if self.button_next.isOver(mouse_pos):
+                        if (temp_choose == num_map - 1): temp_choose = 0
+                        else: temp_choose += 1
+                        self.button_prev.outline_color = BUTTON_BORDER_COLOR
+                        self.button_prev.text_color = TEXT_COLOR
+                        self.button_prev.button_color = BUTTON_COLOR
+
+
+                if event.type == pygame.MOUSEMOTION:
+                    if self.button_backletsgo.isOver(mouse_pos):
+                        self.button_backletsgo.outline_color = BUTTON_BORDER_COLOR_OVER
+                        self.button_backletsgo.text_color = TEXT_COLOR_OVER
+                        self.button_backletsgo.button_color = BUTTON_COLOR_OVER
+                    else:
+                        self.button_backletsgo.outline_color = BUTTON_BORDER_COLOR
+                        self.button_backletsgo.text_color = TEXT_COLOR
+                        self.button_backletsgo.button_color = BUTTON_COLOR
+
+                    if self.button_select.isOver(mouse_pos):
+                        self.button_select.outline_color = BUTTON_BORDER_COLOR_OVER
+                        self.button_select.text_color = TEXT_COLOR_OVER
+                        self.button_select.button_color = BUTTON_COLOR_OVER
+                    else:
+                        self.button_select.outline_color = BUTTON_BORDER_COLOR
+                        self.button_select.text_color = TEXT_COLOR
+                        self.button_select.button_color = BUTTON_COLOR
+
+                    if self.button_next.isOver(mouse_pos):
+                        self.button_next.outline_color = BUTTON_BORDER_COLOR_OVER
+                        self.button_next.text_color = TEXT_COLOR_OVER
+                        self.button_next.button_color = BUTTON_COLOR_OVER
+                    else:
+                        self.button_next.outline_color = BUTTON_BORDER_COLOR
+                        self.button_next.text_color = TEXT_COLOR
+                        self.button_next.button_color = BUTTON_COLOR
+
+                    if self.button_prev.isOver(mouse_pos):
+                        self.button_prev.outline_color = BUTTON_BORDER_COLOR_OVER
+                        self.button_prev.text_color = TEXT_COLOR_OVER
+                        self.button_prev.button_color = BUTTON_COLOR_OVER
+                    else:
+                        self.button_prev.outline_color = BUTTON_BORDER_COLOR
+                        self.button_prev.text_color = TEXT_COLOR
+                        self.button_prev.button_color = BUTTON_COLOR
+
+
+
+
+
+
     def scr_menu_draw(self):
         self.screen.blit(self.menu, [0, 0])
         self.button_letsgo.draw(True)
@@ -427,16 +538,29 @@ class game:
                     if self.button_letsgo.isOver(mouse_pos):
                         self.state = LETSGO
                         self.scr_letsgo()
+                        self.button_letsgo.outline_color = BUTTON_MENU_BORDER_COLOR
+                        self.button_letsgo.text_color = TEXT_MENU_COLOR
+                        self.button_letsgo.button_color = BUTTON_MENU_COLOR
 
 
                     if self.button_choosemap.isOver(mouse_pos):
-                        self.state = ""
+                        self.state = CHOOSEMAP
+                        self.scr_choosemap()
+                        self.button_choosemap.outline_color = BUTTON_MENU_BORDER_COLOR
+                        self.button_choosemap.text_color = TEXT_MENU_COLOR
+                        self.button_choosemap.button_color = BUTTON_MENU_COLOR
 
                     if self.button_tutorial.isOver(mouse_pos):
                         self.state = ""
+                        self.button_tutorial.outline_color = BUTTON_MENU_BORDER_COLOR
+                        self.button_tutorial.text_color = TEXT_MENU_COLOR
+                        self.button_tutorial.button_color = BUTTON_MENU_COLOR
 
                     if self.button_exist.isOver(mouse_pos):
                         self.state = ""
+                        self.button_exist.outline_color = BUTTON_MENU_BORDER_COLOR
+                        self.button_exist.text_color = TEXT_MENU_COLOR
+                        self.button_exist.button_color = BUTTON_MENU_COLOR
 
 
                 if event.type == pygame.MOUSEMOTION:
@@ -475,7 +599,6 @@ class game:
                         self.button_exist.outline_color = BUTTON_MENU_BORDER_COLOR
                         self.button_exist.text_color = TEXT_MENU_COLOR
                         self.button_exist.button_color = BUTTON_MENU_COLOR
-
 
     def run(self):
         self.scr_menu()
