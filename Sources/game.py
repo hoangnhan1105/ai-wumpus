@@ -220,6 +220,10 @@ class game:
                     if self.button_backletsgo.isOver(mouse_pos):
                         self.state = MENU
 
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.state == MENU
+
                 if event.type == pygame.MOUSEMOTION:
                     if self.button_backletsgo.isOver(mouse_pos):
                         self.button_backletsgo.outline_color = BUTTON_BORDER_COLOR_OVER
@@ -294,8 +298,12 @@ class game:
                     sys.exit()
                 mouse_pos = pygame.mouse.get_pos()
 
-                if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
-                    if self.button_backletsgo.isOver(mouse_pos) or event.key == pygame.K_ESCAPE:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.button_backletsgo.isOver(mouse_pos):
+                        self.state == MENU
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
                         self.state == MENU
 
                 if event.type == pygame.MOUSEMOTION:
@@ -396,8 +404,12 @@ class game:
                     sys.exit()
                 mouse_pos = pygame.mouse.get_pos()
 
-                if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
-                    if self.button_backletsgo.isOver(mouse_pos) or event.key == pygame.K_ESCAPE:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.button_backletsgo.isOver(mouse_pos):
+                        self.state = MENU
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
                         self.state = MENU
 
                 if event.type == pygame.MOUSEMOTION:
@@ -452,28 +464,28 @@ class game:
 
                 mouse_pos = pygame.mouse.get_pos()
 
-                if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
-                    if self.button_backletsgo.isOver(mouse_pos) or event.key == pygame.K_ESCAPE:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.button_backletsgo.isOver(mouse_pos):
                         self.state = MENU
                         self.button_backletsgo.outline_color = BUTTON_BORDER_COLOR
                         self.button_backletsgo.text_color = TEXT_COLOR
                         self.button_backletsgo.button_color = BUTTON_COLOR
 
-                    if self.button_select.isOver(mouse_pos) or event.key == pygame.K_KP_ENTER:
+                    if self.button_select.isOver(mouse_pos):
                         self.map_choose = temp_choose
                         self.state = MENU
                         self.button_select.outline_color = BUTTON_BORDER_COLOR
                         self.button_select.text_color = TEXT_COLOR
                         self.button_select.button_color = BUTTON_COLOR
 
-                    if self.button_prev.isOver(mouse_pos) or event.key == pygame.K_LEFT:
+                    if self.button_prev.isOver(mouse_pos):
                         if (temp_choose > 0): temp_choose -= 1
                         else: temp_choose = num_map - 1
                         self.button_next.outline_color = BUTTON_BORDER_COLOR
                         self.button_next.text_color = TEXT_COLOR
                         self.button_next.button_color = BUTTON_COLOR
 
-                    if self.button_next.isOver(mouse_pos) or event.key == pygame.K_RIGHT:
+                    if self.button_next.isOver(mouse_pos):
                         if (temp_choose == num_map - 1): temp_choose = 0
                         else: temp_choose += 1
                         self.button_prev.outline_color = BUTTON_BORDER_COLOR
@@ -518,6 +530,34 @@ class game:
                         self.button_prev.text_color = TEXT_COLOR
                         self.button_prev.button_color = BUTTON_COLOR
 
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.state = MENU
+                        self.button_backletsgo.outline_color = BUTTON_BORDER_COLOR
+                        self.button_backletsgo.text_color = TEXT_COLOR
+                        self.button_backletsgo.button_color = BUTTON_COLOR
+
+                    if event.key == pygame.K_KP_ENTER:
+                        self.map_choose = temp_choose
+                        self.state = MENU
+                        self.button_select.outline_color = BUTTON_BORDER_COLOR
+                        self.button_select.text_color = TEXT_COLOR
+                        self.button_select.button_color = BUTTON_COLOR
+
+                    if event.key == pygame.K_LEFT:
+                        if (temp_choose > 0): temp_choose -= 1
+                        else: temp_choose = num_map - 1
+                        self.button_next.outline_color = BUTTON_BORDER_COLOR
+                        self.button_next.text_color = TEXT_COLOR
+                        self.button_next.button_color = BUTTON_COLOR
+
+                    if event.key == pygame.K_RIGHT:
+                        if (temp_choose == num_map - 1): temp_choose = 0
+                        else: temp_choose += 1
+                        self.button_prev.outline_color = BUTTON_BORDER_COLOR
+                        self.button_prev.text_color = TEXT_COLOR
+                        self.button_prev.button_color = BUTTON_COLOR
 
 
 
