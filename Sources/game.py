@@ -3,6 +3,7 @@ import pygame.freetype
 from cell import *
 from map import *
 from setting import *
+from agent import *
 
 pygame.init()
 
@@ -350,6 +351,10 @@ class game:
 
 
     def scr_letsgo(self):
+
+        main_agent = agent()
+        main_agent.init_kb()
+        print(main_agent.knowledge_base)
 
         # Init a visited list show that the KNIGHT pass the cell yet?
         visited = [[False for _ in range(10)] for _ in range(10)]
