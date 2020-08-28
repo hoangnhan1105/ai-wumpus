@@ -538,7 +538,7 @@ class game:
                         self.button_backletsgo.text_color = TEXT_COLOR
                         self.button_backletsgo.button_color = BUTTON_COLOR
 
-                    if event.key == pygame.K_KP_ENTER:
+                    if event.key == pygame.K_RETURN:
                         self.map_choose = temp_choose
                         self.state = MENU
                         self.button_select.outline_color = BUTTON_BORDER_COLOR
