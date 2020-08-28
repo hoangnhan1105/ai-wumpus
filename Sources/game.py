@@ -265,6 +265,8 @@ class game:
         if knight.is_wumpus_exist() or knight.is_hole_exist():
             knight = None
 
+        print("Wumpus: " + str(self.wumpus) + " Gold: " + str(self.gold) + " Score:" + str(self.score))
+
         return knight
 
 
@@ -340,6 +342,8 @@ class game:
 
         # Update game score
         self.score += score
+
+        print("Wumpus: " + str(self.wumpus) + " Gold: " + str(self.gold) + " Score:" + str(self.score))
 
         return killed
 
@@ -448,28 +452,28 @@ class game:
 
                 mouse_pos = pygame.mouse.get_pos()
 
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.button_backletsgo.isOver(mouse_pos):
+                if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+                    if self.button_backletsgo.isOver(mouse_pos) or event.key == pygame.K_ESCAPE:
                         self.state = MENU
                         self.button_backletsgo.outline_color = BUTTON_BORDER_COLOR
                         self.button_backletsgo.text_color = TEXT_COLOR
                         self.button_backletsgo.button_color = BUTTON_COLOR
 
-                    if self.button_select.isOver(mouse_pos):
+                    if self.button_select.isOver(mouse_pos) or event.key == pygame.K_KP_ENTER:
                         self.map_choose = temp_choose
                         self.state = MENU
                         self.button_select.outline_color = BUTTON_BORDER_COLOR
                         self.button_select.text_color = TEXT_COLOR
                         self.button_select.button_color = BUTTON_COLOR
 
-                    if self.button_prev.isOver(mouse_pos):
+                    if self.button_prev.isOver(mouse_pos) or event.key == pygame.K_LEFT:
                         if (temp_choose > 0): temp_choose -= 1
                         else: temp_choose = num_map - 1
                         self.button_next.outline_color = BUTTON_BORDER_COLOR
                         self.button_next.text_color = TEXT_COLOR
                         self.button_next.button_color = BUTTON_COLOR
 
-                    if self.button_next.isOver(mouse_pos):
+                    if self.button_next.isOver(mouse_pos) or event.key == pygame.K_RIGHT:
                         if (temp_choose == num_map - 1): temp_choose = 0
                         else: temp_choose += 1
                         self.button_prev.outline_color = BUTTON_BORDER_COLOR
