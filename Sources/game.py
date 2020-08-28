@@ -294,8 +294,8 @@ class game:
                     sys.exit()
                 mouse_pos = pygame.mouse.get_pos()
 
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.button_backletsgo.isOver(mouse_pos):
+                if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+                    if self.button_backletsgo.isOver(mouse_pos) or event.key == pygame.K_ESCAPE:
                         self.state == MENU
 
                 if event.type == pygame.MOUSEMOTION:
@@ -396,8 +396,8 @@ class game:
                     sys.exit()
                 mouse_pos = pygame.mouse.get_pos()
 
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.button_backletsgo.isOver(mouse_pos):
+                if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+                    if self.button_backletsgo.isOver(mouse_pos) or event.key == pygame.K_ESCAPE:
                         self.state = MENU
 
                 if event.type == pygame.MOUSEMOTION:
