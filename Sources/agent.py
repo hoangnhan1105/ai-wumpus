@@ -5,12 +5,14 @@
 # 401..500: Safe
 
 import enum
+import queue
 from pysat.solvers import Glucose3
 
 
 class AGENT_ACTION(enum.Enum):
     MOVE = 0
     SHOOT = 1
+    CLIMB = 2
 
 
 class percept:
@@ -27,10 +29,12 @@ class agent:
     WUMPUS_OFFSET = 300
     SAFE_OFFSET = 400
 
-    def __init__(self, knowledge_base=[], pos=(), visited=[]):
-        self.knowledge_base = knowledge_base
-        self.pos = pos
-        self.visited = visited
+    def __init__(self, start_pos):
+        self.START_POS = start_pos
+        self.knowledge_base = []
+        self.pos = ()
+        self.visited = []
+        self.path = []
 
     def init_kb(self):
         self.knowledge_base = []
@@ -86,6 +90,9 @@ class agent:
             self.knowledge_base.append([-(self.SAFE_OFFSET + i), -(self.PIT_OFFSET + i)])
             self.knowledge_base.append([-(self.SAFE_OFFSET + i), -(self.WUMPUS_OFFSET + i)])
 
+        start_idx = self.convert_pos_to_index(self.START_POS)
+        self.knowledge_base.append([self.SAFE_OFFSET + start_idx])
+
     def perceive(self, raw_map, pos):
         new_percept = percept(pos=pos)
         if 'b' in raw_map[pos[1]][pos[0]]:
@@ -124,10 +131,10 @@ class agent:
             self.knowledge_base.append([-(self.STENCH_OFFSET + cell_idx)])
 
         # <WORK IN PROGRESS>
-
+        """
         adj_cells_pos = self.get_adjacent_cells_pos(new_percept.pos)
         adj_cells_idx = [self.convert_pos_to_index(pos) for pos in adj_cells_pos]
-        """
+        
         # Ask if there is a WUMPUS in adjacent cells.
         for adj_idx in adj_cells_idx:
             g = Glucose3()
@@ -137,7 +144,7 @@ class agent:
             sol = g.solve()
             if not sol:
                 self.knowledge_base.append([self.WUMPUS_OFFSET + adj_idx])
-        """
+        
         # Ask if there is a SAFE cell among adjacent cells.
         for adj_idx in adj_cells_idx:
             g = Glucose3()
@@ -147,10 +154,12 @@ class agent:
             sol = g.solve()
             if not sol:
                 self.knowledge_base.append([self.SAFE_OFFSET + adj_idx])
-
+        """
         frontier_cells_pos = []
-        for x in range(10):
-            for y in range(10):
+        for y in range(10):
+            for x in range(10):
+                if (x, y) in self.visited:
+                    continue
                 adj_list = self.get_adjacent_cells_pos((x, y))
                 adj_visited_list = [adj for adj in adj_list if adj in self.visited]
                 if len(adj_visited_list) > 0:
@@ -158,6 +167,8 @@ class agent:
         frontier_cells_idx = [self.convert_pos_to_index(pos) for pos in frontier_cells_pos]
 
         for frontier_idx in frontier_cells_idx:
+            if [self.SAFE_OFFSET + frontier_idx] in self.knowledge_base:
+                continue
             g = Glucose3()
             for clause in self.knowledge_base:
                 g.add_clause(clause)
@@ -171,19 +182,75 @@ class agent:
     def manhattan_distance(self, pos_1, pos_2):
         return abs(pos_1[0] - pos_2[0]) + abs(pos_1[1] - pos_2[1])
 
+    def find_path(self, destination_list_pos):
+        node = self.pos
+        if node in destination_list_pos:
+            return [node]
+
+        frontier = queue.Queue()
+        frontier.put(node)
+        explored = []
+        parent_list = [[() for j in range(10)] for i in range(10)]
+
+        while True:
+            if frontier.empty():
+                return []
+            node = frontier.get()
+            explored.append(node)
+
+            adj_pos = self.get_adjacent_cells_pos(node)
+            for child in adj_pos:
+                if (child not in explored) and (child not in frontier.queue):
+                    if child in destination_list_pos:
+                        explored.append(child)
+                        path = [child]
+                        parent = node
+                        while parent:
+                            path.insert(0, parent)
+                            parent = parent_list[parent[1]][parent[0]]
+                        return path
+                    if child in self.visited:
+                        frontier.put(child)
+                        parent_list[child[1]][child[0]] = node
+
     def make_action(self):
-        # WORK IN PROGRESS...
-        # (Only make MOVE action, and only find safe and ADJACENT cell to move to.)
+        action = None
+        next_cell_pos = ()
+
         safe_cells_idx = [clause[0] % self.SAFE_OFFSET for clause in self.knowledge_base
                           if len(clause) == 1
                           and self.SAFE_OFFSET + 1 <= clause[0] <= self.SAFE_OFFSET + 100]
         safe_cells_pos = [self.convert_index_to_pos(idx) for idx in safe_cells_idx]
+        safe_unvisited_cells_pos = [cell for cell in safe_cells_pos if cell not in self.visited]
 
+        path = self.find_path(safe_unvisited_cells_pos)
+        if not path:  # No safe way to go
+            path = self.find_path([self.START_POS])  # Get out of the cave
+        path.pop(0)  # First element is the current cell
 
+        if len(path) > 0:
+            action = AGENT_ACTION.MOVE
+            next_cell_pos = path[0]
+            if len(path) > 1:
+                self.path = path
+        else:
+            action = AGENT_ACTION.CLIMB
+            next_cell_pos = ()
+
+        return action, next_cell_pos
+
+    def work(self, raw_map, pos):
+        action = None
         next_cell_pos = ()
-        for pos in safe_cells_pos:
-            if self.manhattan_distance(self.pos, pos) == 1 and pos not in self.visited:
-                next_cell_pos = pos
-                break
 
-        return next_cell_pos
+        if len(self.path) == 1:  # Agent has a predetermined path and has arrived at the destination
+            self.path.pop(0)
+        if not self.path:  # Agent doesn't have predetermined path
+            new_percept = self.perceive(raw_map, pos)
+            self.infer_new_knowledge(new_percept)
+            action, next_cell_pos = self.make_action()
+        else:  # Agent is following the predetermined path
+            action = AGENT_ACTION.MOVE
+            self.path.pop(0)
+            next_cell_pos = self.path[0]
+        return action, next_cell_pos

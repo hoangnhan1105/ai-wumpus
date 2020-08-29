@@ -381,7 +381,7 @@ class game:
         knight.knight_come()
         visited[knight.pos[1]][knight.pos[0]] = True
 
-        knight_brain = agent()
+        knight_brain = agent(knight.pos)
         knight_brain.init_kb()
 
         # Move
@@ -431,11 +431,11 @@ class game:
             # knight.knight_shoot_animation() return True or False whether knight killed wumpus or not
             # if self.knight_escape() is called then self.state is set to VICTORY hence game is end
 
-            new_percept = knight_brain.perceive(raw_map, knight.pos)
-            knight_brain.infer_new_knowledge(new_percept)
-            next_cell_pos = knight_brain.make_action()
-
-            knight = self.knight_move_animation(knight, next_cell_pos, visited, cells)
+            action, next_cell_pos = knight_brain.work(raw_map, knight.pos)
+            if action == AGENT_ACTION.MOVE:
+                knight = self.knight_move_animation(knight, next_cell_pos, visited, cells)
+            elif action == AGENT_ACTION.CLIMB:
+                self.knight_escape()
 
             # End game condition
             if knight is None and self.state != MENU: self.state = LOSE
