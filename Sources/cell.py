@@ -84,10 +84,16 @@ class cell:
             new_state = CARD.EMPTY
         if self.state == CARD.GOLD_STENCH:
             new_state = CARD.GOLD
+        if self.state == CARD.GOLD_STENCH_BREEZE:
+            new_state = CARD.GOLD_BREEZE
         if self.state == CARD.STENCH_BREEZE:
             new_state = CARD.BREEZE
         if self.state == CARD.KILL_STENCH:
             new_state = CARD.KILL
+        if self.state == CARD.HOLE_STENCH:
+            new_state = CARD.HOLE
+        if self.state == CARD.HOLE_STENCH_BREEZE:
+            new_state = CARD.HOLE_BREEZE
 
         if self.state == self.prev_state:
             self.state = self.prev_state = new_state
