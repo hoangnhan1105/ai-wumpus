@@ -404,14 +404,14 @@ class game:
 
         # Move
         # pos (x, y)
-        pos = (2, 1)
-        knight = self.knight_move_animation(knight, pos, visited, cells)
+        #pos = (2, 1)
+        #knight = self.knight_move_animation(knight, pos, visited, cells)
 
         #pos = (2, 2)
         #knight = self.knight_move_animation(knight, pos, visited, cells)
 
-        pos = (2, 2)
-        killed = self.sword_shoot_animation(knight, pos, visited, cells)
+        #pos = (2, 2)
+        #killed = self.sword_shoot_animation(knight, pos, visited, cells)
 
         while self.state == LETSGO or self.state == VICTORY or self.state == LOSE:
             # Draw frame while game is running and update all to the screen
