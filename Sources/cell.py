@@ -76,3 +76,28 @@ class cell:
 
     def is_able_to_escape(self):
         return self.state == CARD.START
+
+    def remove_stench(self):
+        new_state = None
+
+        if self.state == CARD.STENCH:
+            new_state = CARD.EMPTY
+        if self.state == CARD.GOLD_STENCH:
+            new_state = CARD.GOLD
+        if self.state == CARD.STENCH_BREEZE:
+            new_state = CARD.BREEZE
+        if self.state == CARD.KILL_STENCH:
+            new_state = CARD.KILL
+
+        if self.state == self.prev_state:
+            self.state = self.prev_state = new_state
+
+        if self.state == CARD.KNIGHT_STENCH:
+            self.prev_state = CARD.EMPTY
+            self.state = CARD.KNIGHT
+
+        if self.state == CARD.KNIGHT_STENCH_BREEZE:
+            self.prev_state = CARD.BREEZE
+            self.state = CARD.KNIGHT_BREEZE
+
+

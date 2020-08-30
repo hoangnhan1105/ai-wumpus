@@ -278,6 +278,19 @@ class game:
         return knight
 
 
+    def wumpus_die_animation(self, wumpus, cells):
+        x, y = wumpus.pos
+
+        # UP
+        if y - 1 >= 0: cells[y - 1][x].remove_stench()
+        # DOWN
+        if y + 1 <= 9: cells[y + 1][x].remove_stench()
+        # LEFT
+        if x - 1 >= 0: cells[y][x - 1].remove_stench()
+        # RIGHT
+        if x + 1 <= 9: cells[y][x + 1].remove_stench()
+
+
     def sword_shoot_animation(self, knight, des_pos, visited, cells):
         killed = False
 
@@ -348,6 +361,7 @@ class game:
 
         # Wumpus die
         if des_cell.is_wumpus_exist():
+            self.wumpus_die_animation(des_cell, cells)
             score = des_cell.wumpus_killed()
             self.draw_frame_game(visited, cells)
             pygame.display.update()
@@ -379,7 +393,7 @@ class game:
         # Random knight spawn
         #start = knight = random_knight_spawn(cells, visited)
 
-        # For simplistic
+        # For simplistic # 0,2
         start = knight = cells[0][2]
         knight.set_spawn()
         knight.knight_come()
@@ -390,14 +404,14 @@ class game:
 
         # Move
         # pos (x, y)
-        #pos = (2, 1)
-        #knight = self.knight_move_animation(knight, pos, visited, cells)
+        pos = (2, 1)
+        knight = self.knight_move_animation(knight, pos, visited, cells)
 
         #pos = (2, 2)
         #knight = self.knight_move_animation(knight, pos, visited, cells)
 
-        #pos = (2, 2)
-        #killed = self.sword_shoot_animation(knight, pos, visited, cells)
+        pos = (2, 2)
+        killed = self.sword_shoot_animation(knight, pos, visited, cells)
 
         while self.state == LETSGO or self.state == VICTORY or self.state == LOSE:
             # Draw frame while game is running and update all to the screen
