@@ -16,10 +16,11 @@ class AGENT_ACTION(enum.Enum):
 
 
 class percept:
-    def __init__(self, pos=(), breeze=False, stench=False):
+    def __init__(self, pos=(), breeze=False, stench=False, scream=False):
         self.pos = pos
         self.breeze = breeze
         self.stench = stench
+        self.scream = scream
 
 
 class agent:
@@ -34,7 +35,16 @@ class agent:
         self.knowledge_base = []
         self.pos = ()
         self.visited = []
-        self.path = []
+        self.guiding_path = []
+        # If guiding_path is not empty,
+        # this is the action which will be perform when the agent
+        # arrives at the end of guiding_path.
+        self.pending_action = None
+        # If the agent's previous action is shooting,
+        # this is the target of that shot.
+        self.prev_shoot_pos = ()
+
+        self.init_kb()
 
     def convert_pos_to_index(self, pos):
         return pos[1] * 10 + pos[0] + 1
@@ -62,7 +72,11 @@ class agent:
                 if literal > 0:
                     print('Pit(', literal % self.PIT_OFFSET, ')', sep='', end='')
                 else:
-                    print('NOT Pit(', -literal % self.PIT_OFFSET, ')', sep='', end='')
+                    # 200 % 100 == 0
+                    idx = -literal % self.PIT_OFFSET
+                    if idx == 0:
+                        idx = 100
+                    print('NOT Pit(', idx, ')', sep='', end='')
             elif self.STENCH_OFFSET + 1 <= abs(literal) <= self.STENCH_OFFSET + 100:
                 if literal > 0:
                     print('Stench(', literal % self.STENCH_OFFSET, ')', sep='', end='')
@@ -152,42 +166,54 @@ class agent:
             self.print_clause(clause)
         print('')
 
-    def perceive(self, raw_map, pos):
-        new_percept = percept(pos=pos)
-        if 'b' in raw_map[pos[1]][pos[0]]:
-            new_percept.breeze = True
-        if 's' in raw_map[pos[1]][pos[0]]:
-            new_percept.stench = True
-        return new_percept
+    def perceive(self, env_input):
+        return env_input
 
     def infer_new_knowledge(self, new_percept):
+        new_knowledge = []
+        remove_knowledge = []
+
         self.pos = new_percept.pos
-        self.visited.append(new_percept.pos)
+        if new_percept.pos not in self.visited:
+            self.visited.append(new_percept.pos)
+
+        if new_percept.scream:
+            wumpus_clause = [self.WUMPUS_OFFSET + self.convert_pos_to_index(self.prev_shoot_pos)]
+            self.knowledge_base.remove(wumpus_clause)
+            remove_knowledge.append(wumpus_clause)
+
+            adj_cells_pos = self.get_adjacent_cells_pos(self.prev_shoot_pos)
+            for adj_pos in adj_cells_pos:
+                if adj_pos not in self.visited:
+                    continue
+                stench_clause = [self.STENCH_OFFSET + self.convert_pos_to_index(adj_pos)]
+                self.knowledge_base.remove(stench_clause)
+                remove_knowledge.append(stench_clause)
+
+            self.prev_shoot_pos = ()
 
         cell_idx = self.convert_pos_to_index(new_percept.pos)
         if new_percept.breeze:
-            self.knowledge_base.append([self.BREEZE_OFFSET + cell_idx])
+            if [self.BREEZE_OFFSET + cell_idx] not in self.knowledge_base:
+                self.knowledge_base.append([self.BREEZE_OFFSET + cell_idx])
+                new_knowledge.append([self.BREEZE_OFFSET + cell_idx])
         else:
-            self.knowledge_base.append([-(self.BREEZE_OFFSET + cell_idx)])
-        if new_percept.stench:
-            self.knowledge_base.append([self.STENCH_OFFSET + cell_idx])
-        else:
-            self.knowledge_base.append([-(self.STENCH_OFFSET + cell_idx)])
+            if [-(self.BREEZE_OFFSET + cell_idx)] not in self.knowledge_base:
+                self.knowledge_base.append([-(self.BREEZE_OFFSET + cell_idx)])
+                new_knowledge.append([-(self.BREEZE_OFFSET + cell_idx)])
 
-        """
-        adj_cells_pos = self.get_adjacent_cells_pos(new_percept.pos)
-        adj_cells_idx = [self.convert_pos_to_index(pos) for pos in adj_cells_pos]
-        
-        # Ask if there is a WUMPUS in adjacent cells.
-        for adj_idx in adj_cells_idx:
-            g = Glucose3()
-            for clause in self.knowledge_base:
-                g.add_clause(clause)
-            g.add_clause([-(self.WUMPUS_OFFSET + adj_idx)])
-            sol = g.solve()
-            if not sol:
-                self.knowledge_base.append([self.WUMPUS_OFFSET + adj_idx])
-        """
+        if new_percept.stench:
+            if [self.STENCH_OFFSET + cell_idx] not in self.knowledge_base:
+                self.knowledge_base.append([self.STENCH_OFFSET + cell_idx])
+                new_knowledge.append([self.STENCH_OFFSET + cell_idx])
+        else:
+            if [-(self.STENCH_OFFSET + cell_idx)] not in self.knowledge_base:
+                self.knowledge_base.append([-(self.STENCH_OFFSET + cell_idx)])
+                new_knowledge.append([-(self.STENCH_OFFSET + cell_idx)])
+                if [self.STENCH_OFFSET + cell_idx] in self.knowledge_base:
+                    self.knowledge_base.remove([self.STENCH_OFFSET + cell_idx])
+                    remove_knowledge.append([self.STENCH_OFFSET + cell_idx])
+
         # Frontier cell: an UNVISITED cell which is adjacent to at least one VISITED cell.
         frontier_cells_pos = []
         for y in range(10):
@@ -200,6 +226,32 @@ class agent:
                     frontier_cells_pos.append((x, y))
         frontier_cells_idx = [self.convert_pos_to_index(pos) for pos in frontier_cells_pos]
 
+        # For each frontier cell, ask if there's a WUMPUS in that cell.
+        found_wumpus = False
+        for frontier_idx in frontier_cells_idx:
+            if [self.WUMPUS_OFFSET + frontier_idx] in self.knowledge_base:
+                continue
+            g = Glucose3()
+            for clause in self.knowledge_base:
+                g.add_clause(clause)
+            g.add_clause([-(self.WUMPUS_OFFSET + frontier_idx)])
+            sol = g.solve()
+            if not sol:
+                self.knowledge_base.append([self.WUMPUS_OFFSET + frontier_idx])
+                new_knowledge.append([self.WUMPUS_OFFSET + frontier_idx])
+                found_wumpus = True
+        if found_wumpus:
+            print('* At ', self.pos, ' :', sep='')
+            print('- New knowledge:')
+            for clause in new_knowledge:
+                self.print_clause(clause)
+            print('- Removed knowledge:')
+            for clause in remove_knowledge:
+                self.print_clause(clause)
+            print('')
+            return
+
+        # If there's no wumpus in any frontier cell, continue.
         # For each frontier cell, ask if it is SAFE.
         for frontier_idx in frontier_cells_idx:
             if [self.SAFE_OFFSET + frontier_idx] in self.knowledge_base:
@@ -211,6 +263,16 @@ class agent:
             sol = g.solve()
             if not sol:
                 self.knowledge_base.append([self.SAFE_OFFSET + frontier_idx])
+                new_knowledge.append([self.SAFE_OFFSET + frontier_idx])
+
+        print('* At ', self.pos, ' :', sep='')
+        print('- New knowledge:')
+        for clause in new_knowledge:
+            self.print_clause(clause)
+        print('- Removed knowledge:')
+        for clause in remove_knowledge:
+            self.print_clause(clause)
+        print('')
 
     def find_path(self, destination_list_pos):
         node = self.pos
@@ -247,6 +309,24 @@ class agent:
         action = None
         next_cell_pos = ()
 
+        wumpus_cells_idx = [clause[0] % self.WUMPUS_OFFSET for clause in self.knowledge_base
+                            if len(clause) == 1
+                            and self.WUMPUS_OFFSET + 1 <= clause[0] <= self.WUMPUS_OFFSET + 100]
+        wumpus_cells_pos = [self.convert_index_to_pos(idx) for idx in wumpus_cells_idx]
+        path = self.find_path(wumpus_cells_pos)
+        if path:
+            path.pop(0)  # First element is the current cell
+            if len(path) > 1:  # If the wumpus cell is not adjacent to agent cell
+                self.guiding_path = path
+                self.pending_action = AGENT_ACTION.SHOOT
+                action = AGENT_ACTION.MOVE
+                next_cell_pos = path[0]
+            else:
+                action = AGENT_ACTION.SHOOT
+                next_cell_pos = path[0]
+            return action, next_cell_pos
+
+        # If there's no wumpus in any frontier cell...
         safe_cells_idx = [clause[0] % self.SAFE_OFFSET for clause in self.knowledge_base
                           if len(clause) == 1
                           and self.SAFE_OFFSET + 1 <= clause[0] <= self.SAFE_OFFSET + 100]
@@ -254,33 +334,72 @@ class agent:
         safe_unvisited_cells_pos = [cell for cell in safe_cells_pos if cell not in self.visited]
 
         path = self.find_path(safe_unvisited_cells_pos)
-        if not path:  # No safe way to go
-            path = self.find_path([self.START_POS])  # Get out of the cave
-        path.pop(0)  # First element is the current cell
+        if path:
+            path.pop(0)
+            if len(path) > 1:  # If the safe unvisited cell is not adjacent to agent cell
+                self.guiding_path = path
+                action = AGENT_ACTION.MOVE
+                next_cell_pos = path[0]
+            else:
+                action = AGENT_ACTION.MOVE
+                next_cell_pos = path[0]
+            return action, next_cell_pos
 
-        if len(path) > 0:
+        # If there's also no safe unvisited cell among the frontier cells...
+        path = self.find_path([self.START_POS])  # Get out of the cave
+        path.pop(0)
+        if len(path) > 0:  # If the agent cell is not the exit
+            self.guiding_path = path
+            self.pending_action = AGENT_ACTION.CLIMB
             action = AGENT_ACTION.MOVE
             next_cell_pos = path[0]
-            if len(path) > 1:
-                self.path = path
         else:
             action = AGENT_ACTION.CLIMB
             next_cell_pos = ()
 
         return action, next_cell_pos
 
-    def work(self, raw_map, pos):
+    def work(self, env_input):
         action = None
         next_cell_pos = ()
 
-        if len(self.path) == 1:  # Agent has a predetermined path and has arrived at the destination
-            self.path.pop(0)
-        if not self.path:  # Agent doesn't have predetermined path
-            new_percept = self.perceive(raw_map, pos)
+        if not self.guiding_path:  # Agent doesn't have a predetermined path
+            new_percept = self.perceive(env_input)
             self.infer_new_knowledge(new_percept)
             action, next_cell_pos = self.make_action()
-        else:  # Agent is following the predetermined path
-            action = AGENT_ACTION.MOVE
-            self.path.pop(0)
-            next_cell_pos = self.path[0]
+        else:  # Agent is following a predetermined path
+            if self.pending_action is None:
+                if len(self.guiding_path) > 2:
+                    self.guiding_path.pop(0)
+                    action = AGENT_ACTION.MOVE
+                    next_cell_pos = self.guiding_path[0]
+                else:
+                    action = AGENT_ACTION.MOVE
+                    next_cell_pos = self.guiding_path[1]
+                    self.guiding_path = []
+                    self.pending_action = None
+            elif self.pending_action == AGENT_ACTION.SHOOT:
+                # If agent isn't standing next to the wumpus.
+                if len(self.guiding_path) > 2:
+                    self.guiding_path.pop(0)
+                    action = AGENT_ACTION.MOVE
+                    next_cell_pos = self.guiding_path[0]
+                # Agent is standing next to the wumpus, and can shoot it now.
+                else:
+                    action = AGENT_ACTION.SHOOT
+                    next_cell_pos = self.guiding_path[1]
+                    self.guiding_path = []
+                    self.pending_action = None
+                    self.prev_shoot_pos = next_cell_pos
+            elif self.pending_action == AGENT_ACTION.CLIMB:
+                if len(self.guiding_path) > 1:
+                    self.guiding_path.pop(0)
+                    action = AGENT_ACTION.MOVE
+                    next_cell_pos = self.guiding_path[0]
+                else:
+                    action = AGENT_ACTION.CLIMB
+                    next_cell_pos = self.guiding_path[0]
+                    self.guiding_path = []
+                    self.pending_action = None
+
         return action, next_cell_pos
