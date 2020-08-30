@@ -383,7 +383,10 @@ class game:
         visited[knight.pos[1]][knight.pos[0]] = True
 
         knight_brain = agent(knight.pos)
-        knight_brain.init_kb()
+        next_cell_pos = ()
+        wumpus_killed = False
+
+        current_map = [[raw_map[i][j] for j in range(10)] for i in range(10)]
 
         # Move
         # pos (x, y)
@@ -432,11 +435,44 @@ class game:
             # knight.knight_shoot_animation() return True or False whether knight killed wumpus or not
             # if self.knight_escape() is called then self.state is set to VICTORY hence game is end
             if self.state == LETSGO:
-                action, next_cell_pos = knight_brain.work(raw_map, knight.pos)
+                if wumpus_killed:
+                    # Remove wumpus in current map
+                    wumpus_pos = next_cell_pos
+                    wumpus_cell_in_map = current_map[wumpus_pos[1]][wumpus_pos[0]]
+                    w_char_idx = wumpus_cell_in_map.find('w')
+                    wumpus_cell_in_map = \
+                        wumpus_cell_in_map[:w_char_idx] + wumpus_cell_in_map[w_char_idx + 1:]
+                    if wumpus_cell_in_map == '':
+                        wumpus_cell_in_map = '-'
+                    current_map[wumpus_pos[1]][wumpus_pos[0]] = wumpus_cell_in_map
+
+                    # Remove adjacent stench in current map
+                    stench_cells_pos = knight_brain.get_adjacent_cells_pos(wumpus_pos)
+                    for stench_pos in stench_cells_pos:
+                        stench_cell_in_map = current_map[stench_pos[1]][stench_pos[0]]
+                        s_char_idx = stench_cell_in_map.find('s')
+                        stench_cell_in_map = \
+                            stench_cell_in_map[:s_char_idx] + stench_cell_in_map[s_char_idx + 1:]
+                        if stench_cell_in_map == '':
+                            stench_cell_in_map = '-'
+                        current_map[stench_pos[1]][stench_pos[0]] = stench_cell_in_map
+
+                env_input = percept(pos=knight.pos, scream=wumpus_killed)
+                if 'b' in current_map[knight.pos[1]][knight.pos[0]]:
+                    env_input.breeze = True
+                if 's' in current_map[knight.pos[1]][knight.pos[0]]:
+                    env_input.stench = True
+
+                action, next_cell_pos = knight_brain.work(env_input)
                 if action == AGENT_ACTION.MOVE:
                     knight = self.knight_move_animation(knight, next_cell_pos, visited, cells)
+                elif action == AGENT_ACTION.SHOOT:
+                    wumpus_killed = self.sword_shoot_animation(knight, next_cell_pos, visited, cells)
                 elif action == AGENT_ACTION.CLIMB:
                     self.knight_escape()
+
+                if action != AGENT_ACTION.SHOOT:
+                    wumpus_killed = False
 
                 # End game condition
                 if knight is None and self.state != MENU: self.state = LOSE
