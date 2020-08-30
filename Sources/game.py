@@ -358,7 +358,8 @@ class game:
 
 
     def knight_escape(self):
-        self.score += SCORE_CLIMBING_OUT
+        if self.state != VICTORY:
+            self.score += SCORE_CLIMBING_OUT
         self.state = VICTORY
 
 
@@ -430,16 +431,16 @@ class game:
             # knight.knight_move_animation() return destination cell that knight move to
             # knight.knight_shoot_animation() return True or False whether knight killed wumpus or not
             # if self.knight_escape() is called then self.state is set to VICTORY hence game is end
+            if self.state == LETSGO:
+                action, next_cell_pos = knight_brain.work(raw_map, knight.pos)
+                if action == AGENT_ACTION.MOVE:
+                    knight = self.knight_move_animation(knight, next_cell_pos, visited, cells)
+                elif action == AGENT_ACTION.CLIMB:
+                    self.knight_escape()
 
-            action, next_cell_pos = knight_brain.work(raw_map, knight.pos)
-            if action == AGENT_ACTION.MOVE:
-                knight = self.knight_move_animation(knight, next_cell_pos, visited, cells)
-            elif action == AGENT_ACTION.CLIMB:
-                self.knight_escape()
-
-            # End game condition
-            if knight is None and self.state != MENU: self.state = LOSE
-            if self.wumpus == 0 and self.gold == 0 and self.state != MENU: self.state = VICTORY
+                # End game condition
+                if knight is None and self.state != MENU: self.state = LOSE
+                if self.wumpus == 0 and self.gold == 0 and self.state != MENU: self.state = VICTORY
 
 
     def scr_draw_choosemap(self, temp_choose):
