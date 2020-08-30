@@ -3,6 +3,7 @@ import pygame.freetype
 from cell import *
 from map import *
 from setting import *
+from agent import *
 
 pygame.init()
 
@@ -380,16 +381,19 @@ class game:
         knight.knight_come()
         visited[knight.pos[1]][knight.pos[0]] = True
 
+        knight_brain = agent(knight.pos)
+        knight_brain.init_kb()
+
         # Move
         # pos (x, y)
-        pos = (2, 1)
-        knight = self.knight_move_animation(knight, pos, visited, cells)
+        #pos = (2, 1)
+        #knight = self.knight_move_animation(knight, pos, visited, cells)
 
         #pos = (2, 2)
         #knight = self.knight_move_animation(knight, pos, visited, cells)
 
-        pos = (2, 2)
-        killed = self.sword_shoot_animation(knight, pos, visited, cells)
+        #pos = (2, 2)
+        #killed = self.sword_shoot_animation(knight, pos, visited, cells)
 
         while self.state == LETSGO or self.state == VICTORY or self.state == LOSE:
             # Draw frame while game is running and update all to the screen
@@ -426,6 +430,12 @@ class game:
             # knight.knight_move_animation() return destination cell that knight move to
             # knight.knight_shoot_animation() return True or False whether knight killed wumpus or not
             # if self.knight_escape() is called then self.state is set to VICTORY hence game is end
+
+            action, next_cell_pos = knight_brain.work(raw_map, knight.pos)
+            if action == AGENT_ACTION.MOVE:
+                knight = self.knight_move_animation(knight, next_cell_pos, visited, cells)
+            elif action == AGENT_ACTION.CLIMB:
+                self.knight_escape()
 
             # End game condition
             if knight is None and self.state != MENU: self.state = LOSE
