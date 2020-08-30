@@ -74,6 +74,7 @@ IMG_WUMPUS = r"../Assets/wumpus.png"
 IMG_BACKGROUND = r"../Assets/bg.jpg"
 IMG_VICTORY = r"../Assets/victory.png"
 IMG_LOSE = r"../Assets/lose.png"
+IMG_TUTORIAL = r"../Assets/tutorial.png"
 
 # Map
 MAP = [r"../Maps/map1.txt",
@@ -140,6 +141,7 @@ SCORE_KILL_WUMPUS = 1000
 
 LETSGO = "letsgo"
 CHOOSEMAP = "choosemap"
+TUTORIAL = "tutorial"
 MENU = "menu"
 VICTORY = "victory"
 LOSE = "lose"

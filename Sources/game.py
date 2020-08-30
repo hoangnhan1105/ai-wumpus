@@ -135,6 +135,9 @@ class game:
         self.map_choose = 0
         self.map = [pygame.image.load(IMG_MAP[i]) for i in range(len(IMG_MAP))]
 
+        # Tutorial
+        self.tutorial = pygame.image.load(IMG_TUTORIAL).convert()
+
 
     def to_scr_pos(self, pos, add_x=0, add_y=0, shoot=False):
         if shoot:
@@ -571,7 +574,35 @@ class game:
                         self.button_prev.button_color = BUTTON_COLOR
 
 
+    def scr_tutorial(self):
+        while self.state == TUTORIAL:
+            self.screen.blit(self.tutorial, [0, 0])
+            self.button_backletsgo.draw(True)
+            pygame.display.update()
 
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                mouse_pos = pygame.mouse.get_pos()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.button_backletsgo.isOver(mouse_pos):
+                        self.state = MENU
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.state == MENU
+
+                if event.type == pygame.MOUSEMOTION:
+                    if self.button_backletsgo.isOver(mouse_pos):
+                        self.button_backletsgo.outline_color = BUTTON_BORDER_COLOR_OVER
+                        self.button_backletsgo.text_color = TEXT_COLOR_OVER
+                        self.button_backletsgo.button_color = BUTTON_COLOR_OVER
+                    else:
+                        self.button_backletsgo.outline_color = BUTTON_BORDER_COLOR
+                        self.button_backletsgo.text_color = TEXT_COLOR
+                        self.button_backletsgo.button_color = BUTTON_COLOR
 
 
     def scr_menu_draw(self):
@@ -614,7 +645,8 @@ class game:
                         self.button_choosemap.button_color = BUTTON_MENU_COLOR
 
                     if self.button_tutorial.isOver(mouse_pos):
-                        self.state = ""
+                        self.state = TUTORIAL
+                        self.scr_tutorial()
                         self.button_tutorial.outline_color = BUTTON_MENU_BORDER_COLOR
                         self.button_tutorial.text_color = TEXT_MENU_COLOR
                         self.button_tutorial.button_color = BUTTON_MENU_COLOR
