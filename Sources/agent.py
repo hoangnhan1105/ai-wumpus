@@ -265,6 +265,7 @@ class agent:
                 self.knowledge_base.append([self.SAFE_OFFSET + frontier_idx])
                 new_knowledge.append([self.SAFE_OFFSET + frontier_idx])
 
+        print('')
         print('* At ', self.pos, ' :', sep='')
         print('- New knowledge:')
         for clause in new_knowledge:
@@ -324,6 +325,7 @@ class agent:
             else:
                 action = AGENT_ACTION.SHOOT
                 next_cell_pos = path[0]
+                self.prev_shoot_pos = next_cell_pos
             return action, next_cell_pos
 
         # If there's no wumpus in any frontier cell...

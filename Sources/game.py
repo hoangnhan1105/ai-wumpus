@@ -383,7 +383,7 @@ class game:
     def scr_letsgo(self):
 
         # Init a visited list show that the KNIGHT pass the cell yet?
-        visited = [[True for _ in range(10)] for _ in range(10)]
+        visited = [[False for _ in range(10)] for _ in range(10)]
 
         # Create cell, number of gold on the map
         raw_map = input_raw(MAP[self.map_choose])
