@@ -279,16 +279,22 @@ class game:
 
 
     def wumpus_die_animation(self, wumpus, cells):
-        x, y = wumpus.pos
+        temp_agent = agent((0, 0))  # Just to use get_adjacent_cells_pos func.
+        stench_cells_pos = temp_agent.get_adjacent_cells_pos(wumpus.pos)
 
-        # UP
-        if y - 1 >= 0: cells[y - 1][x].remove_stench()
-        # DOWN
-        if y + 1 <= 9: cells[y + 1][x].remove_stench()
-        # LEFT
-        if x - 1 >= 0: cells[y][x - 1].remove_stench()
-        # RIGHT
-        if x + 1 <= 9: cells[y][x + 1].remove_stench()
+        for stench_pos in stench_cells_pos:
+            adj_stench_pos = temp_agent.get_adjacent_cells_pos(stench_pos)
+            wumpus_adj = False
+            for adj in adj_stench_pos:
+                x_adj, y_adj = adj
+                if cells[y_adj][x_adj].is_wumpus_exist():
+                    wumpus_adj = True
+                    break
+            if wumpus_adj:  # If there's a wumpus adjacent to this stench cell
+                continue  # Ignore this stench cell
+
+            x_stench, y_stench = stench_pos
+            cells[y_stench][x_stench].remove_stench()
 
 
     def sword_shoot_animation(self, knight, des_pos, visited, cells):
@@ -361,8 +367,8 @@ class game:
 
         # Wumpus die
         if des_cell.is_wumpus_exist():
-            self.wumpus_die_animation(des_cell, cells)
             score = des_cell.wumpus_killed()
+            self.wumpus_die_animation(des_cell, cells)
             self.draw_frame_game(visited, cells)
             pygame.display.update()
 
@@ -402,8 +408,6 @@ class game:
         knight_brain = agent(knight.pos)
         next_cell_pos = ()
         wumpus_killed = False
-
-        current_map = [[raw_map[i][j] for j in range(10)] for i in range(10)]
 
         # Move
         # pos (x, y)
@@ -453,34 +457,72 @@ class game:
             # if self.knight_escape() is called then self.state is set to VICTORY hence game is end
             if self.state == LETSGO:
                 if wumpus_killed:
-                    # Remove wumpus in current map
+                    # Remove wumpus in raw map
                     wumpus_pos = next_cell_pos
-                    wumpus_cell_in_map = current_map[wumpus_pos[1]][wumpus_pos[0]]
+                    wumpus_cell_in_map = raw_map[wumpus_pos[1]][wumpus_pos[0]]
                     w_char_idx = wumpus_cell_in_map.find('w')
                     wumpus_cell_in_map = \
                         wumpus_cell_in_map[:w_char_idx] + wumpus_cell_in_map[w_char_idx + 1:]
                     if wumpus_cell_in_map == '':
                         wumpus_cell_in_map = '-'
-                    current_map[wumpus_pos[1]][wumpus_pos[0]] = wumpus_cell_in_map
+                    raw_map[wumpus_pos[1]][wumpus_pos[0]] = wumpus_cell_in_map
 
-                    # Remove adjacent stench in current map
+                    # Remove adjacent stench in raw map
                     stench_cells_pos = knight_brain.get_adjacent_cells_pos(wumpus_pos)
                     for stench_pos in stench_cells_pos:
-                        stench_cell_in_map = current_map[stench_pos[1]][stench_pos[0]]
+                        adj_stench_pos = knight_brain.get_adjacent_cells_pos(stench_pos)
+                        w_idx = -1
+                        for adj in adj_stench_pos:
+                            adj_stench_in_map = raw_map[adj[1]][adj[0]]
+                            w_idx = adj_stench_in_map.find('w')
+                            if w_idx != -1:
+                                break
+                        if w_idx != -1:  # If there's a wumpus adjacent to this stench cell
+                            continue  # Ignore this stench cell
+
+                        stench_cell_in_map = raw_map[stench_pos[1]][stench_pos[0]]
                         s_char_idx = stench_cell_in_map.find('s')
                         stench_cell_in_map = \
                             stench_cell_in_map[:s_char_idx] + stench_cell_in_map[s_char_idx + 1:]
                         if stench_cell_in_map == '':
                             stench_cell_in_map = '-'
-                        current_map[stench_pos[1]][stench_pos[0]] = stench_cell_in_map
+                        raw_map[stench_pos[1]][stench_pos[0]] = stench_cell_in_map
 
                 env_input = percept(pos=knight.pos, scream=wumpus_killed)
-                if 'b' in current_map[knight.pos[1]][knight.pos[0]]:
+                if 'b' in raw_map[knight.pos[1]][knight.pos[0]]:
                     env_input.breeze = True
-                if 's' in current_map[knight.pos[1]][knight.pos[0]]:
+                if 's' in raw_map[knight.pos[1]][knight.pos[0]]:
                     env_input.stench = True
 
+                prev_kb = knight_brain.knowledge_base[1220:]
+
                 action, next_cell_pos = knight_brain.work(env_input)
+
+                after_kb = knight_brain.knowledge_base[1220:]
+
+                new_clause = []
+                deleted_clause = []
+                for clause in after_kb:
+                    if clause not in prev_kb:
+                        new_clause.append(clause)
+                for clause in prev_kb:
+                    if clause not in after_kb:
+                        deleted_clause.append(clause)
+
+                print('')
+                print('* At ', knight_brain.pos, ' :', sep='')
+                """
+                for clause in knight_brain.knowledge_base[1220:]:
+                    knight_brain.print_clause(clause)
+                """
+                print('- New clauses:')
+                for clause in new_clause:
+                    knight_brain.print_clause(clause)
+                print('- Deleted clauses:')
+                for clause in deleted_clause:
+                    knight_brain.print_clause(clause)
+                print('')
+
                 if action == AGENT_ACTION.MOVE:
                     knight = self.knight_move_animation(knight, next_cell_pos, visited, cells)
                 elif action == AGENT_ACTION.SHOOT:
