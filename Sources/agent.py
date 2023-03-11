@@ -6,7 +6,7 @@
 
 import enum
 import queue
-from pysat.solvers import Glucose3
+from pysat.solvers import Glucose3  # pip install python-sat
 
 
 class AGENT_ACTION(enum.Enum):
@@ -49,12 +49,33 @@ class agent:
         self.init_kb()
 
     def convert_pos_to_index(self, pos):
+        """Convert (x,y) position ((0,0) to (10,10)) to index position (1 to 100).
+
+        :param pos: (x,y) position
+        :type pos: tuple[int, int]
+        :return: The corresponding index position
+        :rtype: int
+        """
         return pos[1] * 10 + pos[0] + 1
 
     def convert_index_to_pos(self, index):
+        """Convert index position (1 to 100) to (x,y) position ((0,0) to (10,10)).
+
+        :param index: index position
+        :type index: int
+        :return: The corresponding (x,y) position
+        :rtype: tuple[int, int]
+        """
         return (index - 1) % 10, (index - 1) // 10
 
     def get_adjacent_cells_pos(self, pos):
+        """Get adjacent cells of a cell.
+
+        :param pos: Position of a cell
+        :type pos: tuple[int, int]
+        :return: The adjacent cells
+        :rtype: list[tuple[int, int]]
+        """
         adj_cells_pos = []
         for i in [-1, 1]:
             if 0 <= pos[0] + i <= 9:
@@ -101,6 +122,19 @@ class agent:
                 print('')
 
     def init_kb(self):
+        """Initialize the Knight's brain (Knowledge Base) with some basic rules.
+
+        There are 3 basic rules:
+
+        - "Breeze(x, y) <=> Pit(x, y - 1) v Pit(x - 1, y) v Pit(x + 1, y) v Pit(x, y + 1)"
+        - "Stench(x, y) <=> Wumpus(x, y - 1) v Wumpus(x - 1, y) v Wumpus(x + 1, y) v Wumpus(x, y + 1)"
+        - "~Pit(x, y) ^ ~Wumpus(x, y) <=> Safe(x, y)"
+
+        Each rule is applied to every cell in the map. Since the map always has 100 cells,
+        there will be 1220 initial, fixed clauses in total in the knowledge base.
+
+        :return:
+        """
         self.knowledge_base = []
 
         # Breeze(x, y) <=> Pit(x, y - 1) v Pit(x - 1, y) v Pit(x + 1, y) v Pit(x, y + 1)
@@ -169,6 +203,14 @@ class agent:
         print('')
 
     def perceive(self, env_input):
+        """
+        Set Knight's position to current cell, and add current cell to list of visited cells.
+
+        :param env_input: Current cell.
+        :type env_input: percept
+        :return: The current cell itself.
+        :rtype: percept
+        """
         self.pos = env_input.pos
         if env_input.pos not in self.visited:
             self.visited.append(env_input.pos)
@@ -268,6 +310,20 @@ class agent:
         """
 
     def find_path(self, start_pos, destination_list_pos):
+        """Find the path from `start_pos` position to one of the positions in
+        `destination_list_pos`.
+
+        The searching algorithm is Breadth-First Search (BFS), but the Knight's vision
+        is limited to visited cells only.
+
+        :param start_pos: Starting position/cell
+        :type start_pos: tuple[int, int]
+        :param destination_list_pos: List of available destination cells
+        :type destination_list_pos: list[tuple[int, int]]
+        :return: Path from the starting cell to one of the destinations,
+            or an empty path if none of the destination can be reached
+        :rtype: list[Optional[tuple[int, int]]]
+        """
         node = start_pos
         if node in destination_list_pos:
             return [node]
@@ -299,9 +355,22 @@ class agent:
                         parent_list[child[1]][child[0]] = node
 
     def make_action(self):
+        """Decide on what to do next, based on the knowledge in the Knight's brain.
+
+        There are 3 scenarios:
+
+        - If there's a wumpus in one of the frontier cells,
+          the Knight will MOVE to the wumpus's cell and SHOOT it.
+        - Otherwise, if there's a safe unvisited cell, the Knight will MOVE there.
+        - Otherwise, the Knight will MOVE to the cave's entrance and EXIT the cave.
+
+        :return: The action in the next move, and the cell corresponding to the action.
+        :rtype: tuple[AGENT_ACTION, tuple | tuple[int, int]]
+        """
         action = None
         next_cell_pos = ()
 
+        # First, try finding wumpus in the frontier cells.
         wumpus_cells_idx = [clause[0] % self.WUMPUS_OFFSET for clause in self.knowledge_base
                             if len(clause) == 1
                             and self.WUMPUS_OFFSET + 1 <= clause[0] <= self.WUMPUS_OFFSET + 100]
@@ -326,7 +395,7 @@ class agent:
                           and self.SAFE_OFFSET + 1 <= clause[0] <= self.SAFE_OFFSET + 100]
         safe_cells_pos = [self.convert_index_to_pos(idx) for idx in safe_cells_idx]
         safe_unvisited_cells_pos = [cell for cell in safe_cells_pos if cell not in self.visited]
-
+        # Try finding a safe unvisited cell.
         path = self.find_path(self.pos, safe_unvisited_cells_pos)
         if path:
             path.pop(0)
@@ -354,6 +423,17 @@ class agent:
         return action, next_cell_pos
 
     def work(self, env_input):
+        """Work his brain to decide what the Knight should do next.
+
+        If Knight is already having a predetermined path in his brain,
+        he'll follow it. Otherwise, he'll infer new knowledge and decide
+        what to do next.
+
+        :param env_input: The states of current cell.
+        :type env_input: percept
+        :return: The action in the next move, and the cell corresponding to the action.
+        :rtype: tuple[AGENT_ACTION, tuple | tuple[int, int]]
+        """
         action = None
         next_cell_pos = ()
 
