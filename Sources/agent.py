@@ -206,9 +206,9 @@ class agent:
         """
         Set Knight's position to current cell, and add current cell to list of visited cells.
 
-        :param env_input: Current cell.
+        :param env_input: The states of current cell.
         :type env_input: percept
-        :return: The current cell itself.
+        :return: The states of current cell themselves.
         :rtype: percept
         """
         self.pos = env_input.pos
@@ -217,10 +217,24 @@ class agent:
         return env_input
 
     def infer_new_knowledge(self, new_percept):
+        """Infer new knowledge to add to the Knowledge Base.
+
+        - First, the Knight will add the states of breeze and stench at the current cell
+          to the KB.
+        - Then, the Knight will enquire the KB about whether there's any Wumpus
+          among the frontier cells.
+        - If there's no approachable Wumpus, the Knight will continue to ask
+          whether there's any safe frontier cell.
+
+        :param new_percept: The states of current cell.
+        :type new_percept: percept
+        :return:
+        """
         new_knowledge = []
         remove_knowledge = []
 
         cell_idx = self.convert_pos_to_index(new_percept.pos)
+        # Add the breeze state of the current cell to KB.
         if new_percept.breeze:
             if [self.BREEZE_OFFSET + cell_idx] not in self.knowledge_base:
                 self.knowledge_base.append([self.BREEZE_OFFSET + cell_idx])
@@ -229,7 +243,7 @@ class agent:
             if [-(self.BREEZE_OFFSET + cell_idx)] not in self.knowledge_base:
                 self.knowledge_base.append([-(self.BREEZE_OFFSET + cell_idx)])
                 new_knowledge.append([-(self.BREEZE_OFFSET + cell_idx)])
-
+        # Add the stench state of the current cell to KB.
         if new_percept.stench:
             if [self.STENCH_OFFSET + cell_idx] not in self.knowledge_base:
                 self.knowledge_base.append([self.STENCH_OFFSET + cell_idx])
@@ -267,7 +281,7 @@ class agent:
                 g.add_clause(clause)
             g.add_clause([-(self.WUMPUS_OFFSET + frontier_idx)])
             sol = g.solve()
-            if not sol:
+            if not sol:  # KB entails the clause according to proof by contradiction.
                 self.knowledge_base.append([self.WUMPUS_OFFSET + frontier_idx])
                 new_knowledge.append([self.WUMPUS_OFFSET + frontier_idx])
                 found_wumpus = True
@@ -294,7 +308,7 @@ class agent:
                 g.add_clause(clause)
             g.add_clause([-(self.SAFE_OFFSET + frontier_idx)])
             sol = g.solve()
-            if not sol:
+            if not sol:  # KB entails the clause according to proof by contradiction.
                 self.knowledge_base.append([self.SAFE_OFFSET + frontier_idx])
                 new_knowledge.append([self.SAFE_OFFSET + frontier_idx])
         """
@@ -313,8 +327,7 @@ class agent:
         """Find the path from `start_pos` position to one of the positions in
         `destination_list_pos`.
 
-        The searching algorithm is Breadth-First Search (BFS), but the Knight's vision
-        is limited to visited cells only.
+        The searching algorithm is Breadth-First Search (BFS).
 
         :param start_pos: Starting position/cell
         :type start_pos: tuple[int, int]
