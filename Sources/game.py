@@ -105,7 +105,7 @@ class game:
         self.button_letsgo = button( self.screen, BUTTON_MENU_COLOR, TEXT_MENU_COLOR, BUTTON_MENU_BORDER_COLOR, RECT_LETSGO, TEXT_SIZE_MENU,  "LET'S GO")
         self.button_choosemap = button( self.screen, BUTTON_MENU_COLOR, TEXT_MENU_COLOR, BUTTON_MENU_BORDER_COLOR, RECT_CHOOSEMAP, TEXT_SIZE_MENU,  "CHOOSE MAP")
         self.button_tutorial = button(self.screen, BUTTON_MENU_COLOR, TEXT_MENU_COLOR, BUTTON_MENU_BORDER_COLOR, RECT_TUTORIAL, TEXT_SIZE_MENU, "TUTORIAL")
-        self.button_exist = button(self.screen, BUTTON_MENU_COLOR, TEXT_MENU_COLOR, BUTTON_MENU_BORDER_COLOR, RECT_EXIST, TEXT_SIZE_MENU, "EXIT")
+        self.button_exist = button(self.screen, BUTTON_MENU_COLOR, TEXT_MENU_COLOR, BUTTON_MENU_BORDER_COLOR, RECT_EXIST, TEXT_SIZE_MENU, "EXIT")  # Nhan: "Exit", not "exist", Buu!
 
         # Back button (playing)
         self.button_backletsgo = button(self.screen, BUTTON_COLOR, TEXT_COLOR, BUTTON_BORDER_COLOR, RECT_BACKLETSGO, TEXT_SIZE_BACKLETSGO, "BACK")
@@ -494,6 +494,7 @@ class game:
                 if 's' in raw_map[knight.pos[1]][knight.pos[0]]:
                     env_input.stench = True
 
+                # Ignore the first 1220 initial, fixed clauses.
                 prev_kb = knight_brain.knowledge_base[1220:]
 
                 action, next_cell_pos = knight_brain.work(env_input)
