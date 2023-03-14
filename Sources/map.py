@@ -14,6 +14,8 @@ def input_raw(map_input_path):
     return raw_map
 
 def raw_to_cells(raw_map):
+    # The order of axes in the cell matrix is flipped from the order in the real map.
+    # I.e., to access cell (x, y) in the matrix, we need to call cells[y][x].
     cells = []
     gold = 0
     wumpus = 0

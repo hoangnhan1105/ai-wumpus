@@ -1,7 +1,7 @@
 from setting import *
 
 class cell:
-    def __init__(self, pos, state):
+    def __init__(self, pos: tuple[int, int], state: CARD):
         self.pos = pos
         self.state = state
         self.prev_state = state
