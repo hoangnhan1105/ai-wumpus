@@ -397,16 +397,16 @@ class game:
         self.score = 0
 
         # Random knight spawn
-        #start = knight = random_knight_spawn(cells, visited)
+        start = knight = random_knight_spawn(cells, visited)
 
-        # For simplistic # 0,2
-        start = knight = cells[0][2]
-        # The cave door overwrites the gold.
-        if knight.is_gold_exist():
-            self.gold -= 1
-        knight.set_spawn()
-        knight.knight_come()
-        visited[knight.pos[1]][knight.pos[0]] = True
+        # # For simplistic # 0,2
+        # start = knight = cells[0][2]
+        # # The cave door overwrites the gold.
+        # if knight.is_gold_exist():
+        #     self.gold -= 1
+        # knight.set_spawn()
+        # knight.knight_come()
+        # visited[knight.pos[1]][knight.pos[0]] = True
 
         knight_brain = agent(knight.pos)
         next_cell_pos = ()

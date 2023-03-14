@@ -522,6 +522,7 @@ class agent:
                 else:
                     # If the program reaches here, it means there's something WRONG
                     # with the Knight's algorithm (because it shot a cell without a Wumpus).
+                    self.pending_action = None
                     self.infer_new_knowledge(new_percept)
                     action, next_cell_pos = self.make_action()
 
