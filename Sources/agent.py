@@ -256,6 +256,7 @@ class agent:
                     self.knowledge_base.remove([self.STENCH_OFFSET + cell_idx])
                     remove_knowledge.append([self.STENCH_OFFSET + cell_idx])
 
+        # The inference is halted until the stench recheck finishes to prevent wrong deductions.
         if self.pending_action in [AGENT_ACTION.CHECK_WUMPUS_DIE, AGENT_ACTION.RECHECK_STENCH]:
             return
 
@@ -399,6 +400,7 @@ class agent:
             else:
                 action = AGENT_ACTION.SHOOT
                 next_cell_pos = path[0]
+                self.pending_action = AGENT_ACTION.CHECK_WUMPUS_DIE
                 self.prev_shoot_pos = next_cell_pos
             return action, next_cell_pos
 
@@ -492,32 +494,34 @@ class agent:
                                      + self.convert_pos_to_index(self.prev_shoot_pos)]
                     self.knowledge_base.remove(wumpus_clause)
 
-                    # Coincidentally, the shooting position is also a stench cell,
-                    # so we can immediately delete the stench on this cell
-                    # without the need of rechecking.
-                    current_stench_clause = [self.STENCH_OFFSET
-                                             + self.convert_pos_to_index(self.pos)]
-                    self.knowledge_base.remove(current_stench_clause)
+                    # After killing a Wumpus, the Knight needs to revisit the visited cells around it
+                    # to recheck their stench state and update the KB if necessary, so as not to leave
+                    # incorrect knowledge in the KB, which can cause wrong deductions in the future.
 
                     wumpus_adj_pos = self.get_adjacent_cells_pos(self.prev_shoot_pos)
                     wumpus_adj_visited_pos = [pos for pos in wumpus_adj_pos if pos in self.visited]
 
-                    recheck_path = []
+                    recheck_path = []  # Path to revisit each adjacent cell of Wumpus's cell
                     prev_check_pos = self.pos
                     for adj_pos in wumpus_adj_visited_pos:
                         path = self.find_path(prev_check_pos, [adj_pos])
                         path.pop(0)
                         recheck_path.extend(path)
+                        prev_check_pos = adj_pos
 
                     if len(recheck_path) > 0:
                         self.guiding_path = recheck_path
                         self.pending_action = AGENT_ACTION.RECHECK_STENCH
+                        self.infer_new_knowledge(new_percept)
                         action = AGENT_ACTION.MOVE
                         next_cell_pos = self.guiding_path[0]
                     else:
+                        self.pending_action = None
                         self.infer_new_knowledge(new_percept)
                         action, next_cell_pos = self.make_action()
                 else:
+                    # If the program reaches here, it means there's something WRONG
+                    # with the Knight's algorithm (because it shot a cell without a Wumpus).
                     self.infer_new_knowledge(new_percept)
                     action, next_cell_pos = self.make_action()
 

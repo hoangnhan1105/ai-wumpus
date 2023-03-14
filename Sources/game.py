@@ -401,6 +401,9 @@ class game:
 
         # For simplistic # 0,2
         start = knight = cells[0][2]
+        # The cave door overwrites the gold.
+        if knight.is_gold_exist():
+            self.gold -= 1
         knight.set_spawn()
         knight.knight_come()
         visited[knight.pos[1]][knight.pos[0]] = True
